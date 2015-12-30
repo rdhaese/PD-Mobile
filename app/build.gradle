@@ -1,0 +1,63 @@
+apply plugin: 'com.android.application'
+apply plugin: 'maven'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        applicationId "be.rdhaese.project.mobile"
+        minSdkVersion 15
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    packagingOptions{
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        //Can't run having a dependency on spring rest template
+        //Kind of a bug, spring core and spring rest template both have the same content for notice.txt
+        //There is a dirty fix available: delete the notice.txt from the META-INF from 1 off the jars in the gradle cache
+        //See:
+        //http://stackoverflow.com/questions/20673625/android-gradle-plugin-0-7-0-duplicate-files-during-packaging-of-apk
+    }
+}
+
+
+repositories {
+    maven {
+        url 'http://localhost:8081/nexus/content/repositories/packet_delivery'
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    testCompile 'junit:junit:4.12'
+    compile 'org.roboguice:roboguice:3.0.1'
+    provided 'org.roboguice:roboblender:3.0.1'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    provided 'be.rdhaese.packetdelivery:dto:1.0-SNAPSHOT'
+    compile 'com.android.support:design:23.1.1'
+    compile project(':mobile-service')
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "http://localhost:8081/nexus/content/repositories/packet_delivery") {
+                authentication(userName: "admin", password: "29januari")
+            }
+            pom.version = "1.0-SNAPSHOT"
+            pom.artifactId = "app"
+            pom.groupId = "be.rdhaese.packetdelivery.mobile"
+        }
+    }
+}
+
+

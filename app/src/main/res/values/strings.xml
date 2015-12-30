@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Mobile</string>
+    <string name="title_activity_number_of_packets">NumberOfPacketsActivity</string>
+</resources>

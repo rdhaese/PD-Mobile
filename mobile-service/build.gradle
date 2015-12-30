@@ -1,0 +1,28 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+
+repositories{
+    maven {
+        url 'http://localhost:8081/nexus/content/repositories/packet_delivery'
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'org.springframework.android:spring-android-rest-template:1.0.1.RELEASE'
+    compile 'be.rdhaese.packetdelivery:dto:1.0-SNAPSHOT'
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "http://localhost:8081/nexus/content/repositories/packet_delivery") {
+                authentication(userName: "admin", password: "29januari")
+            }
+            pom.version = "1.0-SNAPSHOT"
+            pom.artifactId = "service"
+            pom.groupId = "be.rdhaese.packetdelivery.mobile"
+        }
+    }
+}
