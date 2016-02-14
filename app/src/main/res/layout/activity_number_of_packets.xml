@@ -9,21 +9,42 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".activity.NumberOfPacketsActivity">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start Round"
-        android:id="@+id/btnStartRound"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:onClick="startRound"/>
-
     <NumberPicker
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/npNumberOfPackets"
+        android:orientation="horizontal"
         android:layout_above="@+id/btnStartRound"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="71dp"
-        android:orientation="horizontal" />
+        android:layout_marginBottom="25dp" />
+
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="250dp"
+        android:id="@+id/imageView2"
+        android:src="@drawable/icon"
+        android:layout_alignBottom="@+id/textView4"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="PacketDelivery Mobile App"
+        android:id="@+id/textView4"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Request Packets"
+        android:id="@+id/btnStartRound"
+        android:onClick="startRound"
+        android:background="@drawable/rounded_button"
+        android:layout_above="@+id/imageView2"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="50dp"
+        android:padding="5dp" />
 </RelativeLayout>

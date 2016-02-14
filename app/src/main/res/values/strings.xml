@@ -1,4 +1,5 @@
 <resources>
-    <string name="app_name">Mobile</string>
+    <string name="app_name">PacketDelivery Mobile App</string>
     <string name="title_activity_number_of_packets">NumberOfPacketsActivity</string>
+    <string name="title_activity_searching_packets">SearchingPacketsActivity</string>
 </resources>

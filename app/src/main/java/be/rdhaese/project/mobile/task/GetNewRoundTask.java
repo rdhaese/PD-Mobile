@@ -2,16 +2,15 @@ package be.rdhaese.project.mobile.task;
 
 import android.os.AsyncTask;
 
-import com.google.inject.Inject;
-
 import be.rdhaese.eindproject.mobile_service.CreateNewRoundService;
+import be.rdhaese.eindproject.mobile_service.impl.CreateNewRoundServiceImpl;
 
 /**
  * Created by RDEAX37 on 28/12/2015.
  */
 public class GetNewRoundTask extends AsyncTask<Integer,Void,String> {
-
-    CreateNewRoundService createNewRoundService = new CreateNewRoundService();
+    //TODO better to inject dependency...
+    CreateNewRoundService createNewRoundService = new CreateNewRoundServiceImpl();
 
     @Override
     protected String doInBackground(Integer... params) {
