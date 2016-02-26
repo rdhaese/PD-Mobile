@@ -43,7 +43,7 @@ public class NumberOfPacketsActivity extends RoboActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    blabla();
+                    startRound();
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
 
@@ -60,11 +60,14 @@ public class NumberOfPacketsActivity extends RoboActivity {
         }
     }
 
-    private void blabla() {
+    private void startRound() {
         System.setProperty("http.keepAlive", "false");
         System.out.println("BEFORE EXECUTING REMOTE CALL");
         try {
-            System.out.println(new GetNewRoundTask().execute(1).get());
+            Long roundId = new GetNewRoundTask().execute(1).get();
+            Intent intent = new Intent(this, SearchingPacketsActivity.class);
+            intent.putExtra("roundId", roundId);
+            startActivity(intent);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -73,9 +76,7 @@ public class NumberOfPacketsActivity extends RoboActivity {
     }
 
     public void startRound(View view) throws ExecutionException, InterruptedException {
-        //askPermissionIfNecessaryAndStartRound();
-        Intent intent = new Intent(this, SearchingPacketsActivity.class);
-        startActivity(intent);
+        askPermissionIfNecessaryAndStartRound();
     }
 
     private void askPermissionIfNecessaryAndStartRound() {
@@ -100,7 +101,8 @@ public class NumberOfPacketsActivity extends RoboActivity {
                 // result of the request.
             }
         } else {
-            blabla();
+            //TODO What happens here???
+
         }
     }
 }

@@ -15,7 +15,6 @@
         android:layout_height="250dp"
         android:id="@+id/imageView"
         android:src="@drawable/icon"
-        android:layout_alignBottom="@+id/textView2"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
@@ -25,9 +24,8 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="No Round Started"
         android:id="@+id/textView"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp" />
+        android:layout_above="@+id/btnStartNewRound"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="100dp"
@@ -36,17 +34,13 @@
         android:id="@+id/btnStartNewRound"
         android:background="@drawable/rounded_button"
         android:onClick="newRound"
-        android:layout_above="@+id/imageView"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="50dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="PacketDelivery Mobile App"
-        android:id="@+id/textView2"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/imageView"
+        android:layout_alignEnd="@+id/imageView"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:textColor="#ffffff" />
 
 </RelativeLayout>

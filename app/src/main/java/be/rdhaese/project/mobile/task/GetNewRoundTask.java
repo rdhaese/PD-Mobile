@@ -2,21 +2,21 @@ package be.rdhaese.project.mobile.task;
 
 import android.os.AsyncTask;
 
-import be.rdhaese.eindproject.mobile_service.CreateNewRoundService;
-import be.rdhaese.eindproject.mobile_service.impl.CreateNewRoundServiceImpl;
+import be.rdhaese.eindproject.mobile_service.RoundService;
+import be.rdhaese.eindproject.mobile_service.impl.RoundServiceImpl;
 
 /**
  * Created by RDEAX37 on 28/12/2015.
  */
-public class GetNewRoundTask extends AsyncTask<Integer,Void,String> {
+public class GetNewRoundTask extends AsyncTask<Integer,Void,Long> {
     //TODO better to inject dependency...
-    CreateNewRoundService createNewRoundService = new CreateNewRoundServiceImpl();
+    RoundService roundService = new RoundServiceImpl();
 
     @Override
-    protected String doInBackground(Integer... params) {
+    protected Long doInBackground(Integer... params) {
         if (params.length == 0) {
             return null;
         }
-        return createNewRoundService.getNewRound(params[0]);
+        return roundService.getNewRound(params[0]);
     }
 }
