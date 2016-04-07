@@ -1,0 +1,114 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="be.rdhaese.project.mobile.LoadingInFragment">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Loading In"
+            android:id="@+id/textView5"
+            android:layout_toEndOf="@+id/textView8"
+            android:layout_marginTop="53dp"
+            android:layout_centerVertical="true"
+            android:layout_above="@+id/textView6"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:textAlignment="center" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Current Package:"
+            android:id="@+id/textView6"
+            android:layout_above="@+id/textView8"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="packetId"
+            android:id="@+id/textView7"
+            android:layout_above="@+id/textView8"
+            android:layout_toRightOf="@+id/textView6"
+            android:layout_toEndOf="@+id/textView6"
+            android:layout_marginLeft="5dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Scan"
+            android:id="@+id/btnScan"
+            android:background="@drawable/rounded_button"
+            android:onClick="scan"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:textColor="#ffffff"
+            android:layout_alignParentEnd="true"/>
+        <!--            android:layout_alignRight="@+id/imageView3"
+        android:layout_alignEnd="@+id/imageView3"-->
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lost"
+            android:id="@+id/button2"
+            android:background="@drawable/rounded_button"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignEnd="@+id/button3"
+            android:layout_above="@+id/button3"
+            android:textColor="#ffffff" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Confirm Visually"
+            android:id="@+id/button3"
+            android:background="@drawable/rounded_button"
+            android:padding="5dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="false"
+            android:layout_alignEnd="@+id/btnScan"
+            android:layout_above="@+id/btnScan"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:textColor="#ffffff" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Packets Left:"
+            android:id="@+id/textView8"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_above="@+id/button2" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="amountOfPacketsLeft"
+            android:id="@+id/textView9"
+            android:layout_alignEnd="@+id/textView5"
+            android:layout_above="@+id/button2"
+            android:layout_toLeftOf="@+id/textView8" />
+
+    </RelativeLayout>
+</FrameLayout>

@@ -11,8 +11,17 @@ repositories{
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'org.springframework.android:spring-android-rest-template:1.0.1.RELEASE'
-    compile 'be.rdhaese.packetdelivery:dto:1.0-SNAPSHOT'
+    compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
+    compile('be.rdhaese.packetdelivery.back-end.web-service:interfaces:1.0-SNAPSHOT') {
+        exclude module: 'spring-boot-starter'
+        exclude module: 'spring-boot-starter-web'
+    }
 }
+
+sourceSets {
+    main.resources.srcDirs += 'src/main/res'
+}
+
 
 uploadArchives {
     repositories {

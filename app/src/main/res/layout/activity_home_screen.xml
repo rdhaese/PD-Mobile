@@ -10,37 +10,19 @@
     tools:context=".activity.HomeScreenActivity"
  >
 
-    <ImageView
-        android:layout_width="fill_parent"
+    <fragment
+        android:id="@+id/fragment_logo"
+        class="be.rdhaese.project.mobile.LogoFragment"
+        android:layout_width="match_parent"
         android:layout_height="250dp"
-        android:id="@+id/imageView"
-        android:src="@drawable/icon"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+         />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="No Round Started"
-        android:id="@+id/textView"
-        android:layout_above="@+id/btnStartNewRound"
-        android:layout_centerHorizontal="true" />
 
-    <Button
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:text="Start"
-        android:id="@+id/btnStartNewRound"
-        android:background="@drawable/rounded_button"
-        android:onClick="newRound"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignRight="@+id/imageView"
-        android:layout_alignEnd="@+id/imageView"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:textColor="#ffffff" />
+    <fragment
+        android:id="@+id/fragment_start_round"
+        class="be.rdhaese.project.mobile.StartRoundFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/fragment_logo" />
 
 </RelativeLayout>

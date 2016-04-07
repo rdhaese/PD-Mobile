@@ -4,12 +4,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import be.rdhaese.project.mobile.R;
+import roboguice.activity.RoboFragmentActivity;
+import roboguice.inject.ContentView;
 
-public class OngoingDeliveryActivity extends AppCompatActivity {
+@ContentView(R.layout.activity_ongoing_delivery)
+public class OngoingDeliveryActivity extends RoboFragmentActivity {
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ongoing_delivery);
-    }
 }

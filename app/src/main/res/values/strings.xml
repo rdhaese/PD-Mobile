@@ -2,4 +2,7 @@
     <string name="app_name">PacketDelivery Mobile App</string>
     <string name="title_activity_number_of_packets">NumberOfPacketsActivity</string>
     <string name="title_activity_searching_packets">SearchingPacketsActivity</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

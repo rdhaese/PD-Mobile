@@ -6,17 +6,10 @@ import android.os.Bundle;
 import android.view.View;
 
 import be.rdhaese.project.mobile.R;
+import roboguice.activity.RoboFragmentActivity;
+import roboguice.inject.ContentView;
 
-public class LoadingInActivity extends AppCompatActivity {
+@ContentView(R.layout.activity_loading_in)
+public class LoadingInActivity extends RoboFragmentActivity {
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_loading_in);
-    }
-
-    public void scan(View view){
-        Intent intent = new Intent(this, OngoingDeliveryActivity.class);
-        startActivity(intent);
-    }
 }
