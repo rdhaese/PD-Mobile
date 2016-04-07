@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.design.internal.ParcelableSparseArray;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,15 +15,20 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import be.rdhaese.packetdelivery.back_end.application.web_service.interfaces.DeliveryRoundWebService;
+import be.rdhaese.packetdelivery.dto.PacketDTO;
 import be.rdhaese.project.mobile.R;
+import be.rdhaese.project.mobile.StartRoundFragment;
+import be.rdhaese.project.mobile.activity.HomeScreenActivity;
 import be.rdhaese.project.mobile.activity.LoadingInActivity;
 import be.rdhaese.project.mobile.activity.SearchingPacketsActivity;
 import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
+import be.rdhaese.project.mobile.task.EndRoundTask;
 import be.rdhaese.project.mobile.task.GetRoundPacketsTask;
 import be.rdhaese.project.mobile.task.MarkAsLostTask;
 
@@ -196,6 +202,8 @@ public class SearchPacketsAdapter extends BaseAdapter {
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        //ArrayList implementation needed to be able to put it on an intent
+                        ArrayList<SearchPacketsPacketDTO> packetsThatAreLeft = new ArrayList<SearchPacketsPacketDTO>(packets);
                         for (SearchPacketsPacketDTO packet : packets) {
                             if (packet.getLost()) {
                                 //Let the back end remove the packet
@@ -203,7 +211,7 @@ public class SearchPacketsAdapter extends BaseAdapter {
                                 try {
                                     Boolean removed = new MarkAsLostTask().execute(roundId, packet).get();
                                     if (removed){
-                                        packets.remove(packet);
+                                        packetsThatAreLeft.remove(packet);
                                     }
                                     String message = String.format(
                                             "Result of backend trying to mark packet [%s] for round [%s] as lost: [%s]",
@@ -219,11 +227,11 @@ public class SearchPacketsAdapter extends BaseAdapter {
                             }
                         }
 
-                        //If no packets left -> the round ends
-                        if (packets.size() == 0){
+                        if (packetsThatAreLeft.size() == 0){
+                            //If no packets left -> the round ends
                             try {
+                                //Let backend mark the round as ended
                                 Boolean roundEnded = new EndRoundTask().execute(roundId).get();
-
                                 String message = String.format(
                                         "Result of backend trying to end round [%s]",
                                         roundId);
@@ -234,13 +242,18 @@ public class SearchPacketsAdapter extends BaseAdapter {
                                         roundId);
                                 Log.e(getClass().getSimpleName(), message, e);
                             }
-                        }
 
-                        //create intent with roundId and remaining packets
-                        Intent intent = new Intent(activityContext, LoadingInActivity.class);
-                        intent.putExtra("roundId", roundId);
-                        //show next activity
-                        activityContext.startActivity(intent);
+                            //Go back to the start screen
+                            Intent intent = new Intent(activityContext, HomeScreenActivity.class);
+                            activityContext.startActivity(intent);
+                        }else { //The round can go on to the next screen
+                            //create intent with roundId and remaining packets
+                            Intent intent = new Intent(activityContext, LoadingInActivity.class);
+                            intent.putExtra("roundId", roundId);
+                            intent.putParcelableArrayListExtra("packets", packetsThatAreLeft);
+                            //show next activity
+                            activityContext.startActivity(intent);
+                        }
                     }
                 });
         builder.create().show();

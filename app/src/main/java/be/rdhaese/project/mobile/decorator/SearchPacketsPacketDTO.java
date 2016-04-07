@@ -1,22 +1,15 @@
 package be.rdhaese.project.mobile.decorator;
 
-/**
- * Created by RDEAX37 on 27/02/2016.
- */
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import be.rdhaese.packetdelivery.dto.PacketDTO;
 
-
-/**
- * Facade for a PacketDTO. <br />
- * Adds extra members, so components can decide what to do with the packet
- */
-public class SearchPacketsPacketDTO extends PacketDTO {
+public class SearchPacketsPacketDTO extends PacketDTO implements Parcelable {
 
     private PacketDTO packetDTO;
     private Boolean found = false;
@@ -225,4 +218,45 @@ public class SearchPacketsPacketDTO extends PacketDTO {
     public void setLost(Boolean lost) {
         this.lost = lost;
     }
+
+    protected SearchPacketsPacketDTO(Parcel in) {
+        packetDTO = (PacketDTO) in.readValue(PacketDTO.class.getClassLoader());
+        byte foundVal = in.readByte();
+        found = foundVal == 0x02 ? null : foundVal != 0x00;
+        byte lostVal = in.readByte();
+        lost = lostVal == 0x02 ? null : lostVal != 0x00;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeValue(packetDTO);
+        if (found == null) {
+            dest.writeByte((byte) (0x02));
+        } else {
+            dest.writeByte((byte) (found ? 0x01 : 0x00));
+        }
+        if (lost == null) {
+            dest.writeByte((byte) (0x02));
+        } else {
+            dest.writeByte((byte) (lost ? 0x01 : 0x00));
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<SearchPacketsPacketDTO> CREATOR = new Parcelable.Creator<SearchPacketsPacketDTO>() {
+        @Override
+        public SearchPacketsPacketDTO createFromParcel(Parcel in) {
+            return new SearchPacketsPacketDTO(in);
+        }
+
+        @Override
+        public SearchPacketsPacketDTO[] newArray(int size) {
+            return new SearchPacketsPacketDTO[size];
+        }
+    };
 }

@@ -60,4 +60,13 @@ public class BackEndProperties {
                 getServerPath(),
                 backEndProperties.getProperty("markAsLost"));
     }
+
+    public String getEndRoundUrl(Long roundId) {
+        return String.format(
+                  "%s/%s%s",
+                getServerPath(),
+                backEndProperties.getProperty("endRound"),
+                roundId
+                );
+    }
 }

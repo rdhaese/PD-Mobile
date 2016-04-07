@@ -1,6 +1,8 @@
 package be.rdhaese.packetdelivery.mobile.service;
 
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
@@ -56,23 +58,30 @@ public class DeliveryRoundServiceProxyRestWebService implements DeliveryRoundWeb
         vars.put("roundId", roundId);
         return restTemplate.postForObject(backEndProperties.getMarkAsLostUrl(), packetDTO, Boolean.class, vars);
     }
-    @Override
-    public Boolean deliver(Long aLong, PacketDTO packetDTO) {
+   // @Override
+    public Boolean deliver(Long roundId, PacketDTO packetDTO) {
+        return null;
+    }
+
+   // @Override
+    public Boolean cannotDeliver(Long roundId, PacketDTO packetDTO, String s) {
+        return null;
+    }
+
+   // @Override
+    public Boolean addRemark(Long roundId, String s) {
+        return null;
+    }
+
+   // @Override
+    public Boolean addLocationUpdate(Long roundId, LongLatDTO longLatDTO) {
         return null;
     }
 
     @Override
-    public Boolean cannotDeliver(Long aLong, PacketDTO packetDTO, String s) {
-        return null;
-    }
-
-    @Override
-    public Boolean addRemark(Long aLong, String s) {
-        return null;
-    }
-
-    @Override
-    public Boolean addLocationUpdate(Long aLong, LongLatDTO longLatDTO) {
-        return null;
+    public Boolean endRound(Long roundId) {
+        return restTemplate.getForObject(
+                backEndProperties.getEndRoundUrl(roundId),
+                Boolean.class);
     }
 }
