@@ -15,12 +15,17 @@ public class SearchPacketsPacketDTO extends PacketDTO implements Parcelable {
     private Boolean found = false;
     private Boolean lost = false;
 
-    public static Collection<SearchPacketsPacketDTO> mapCollection(Collection<PacketDTO> packetDTOs){
+    public static Collection<SearchPacketsPacketDTO> mapCollectionToDecorator(Collection<PacketDTO> packetDTOs){
         Collection<SearchPacketsPacketDTO> searchPacketsPacketDTOs = new ArrayList<>();
         for (PacketDTO packetDTO : packetDTOs){
             searchPacketsPacketDTOs.add(new SearchPacketsPacketDTO(packetDTO));
         }
         return searchPacketsPacketDTOs;
+    }
+
+    public static Collection<PacketDTO> mapCollectionToDTO(Collection<SearchPacketsPacketDTO> searchPacketsPacketDTOs){
+        Collection<? extends PacketDTO> packetDTOs = new ArrayList<>(searchPacketsPacketDTOs);
+        return (Collection<PacketDTO>) packetDTOs;
     }
 
     public SearchPacketsPacketDTO(PacketDTO packetDTO){

@@ -1,6 +1,5 @@
 package be.rdhaese.project.mobile;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +12,6 @@ import java.util.concurrent.ExecutionException;
 
 import be.rdhaese.packetdelivery.back_end.application.web_service.interfaces.DeliveryRoundWebService;
 import be.rdhaese.packetdelivery.dto.PacketDTO;
-import be.rdhaese.project.mobile.activity.LoadingInActivity;
 import be.rdhaese.project.mobile.activity.SearchingPacketsActivity;
 import be.rdhaese.project.mobile.adapter.SearchPacketsAdapter;
 import be.rdhaese.project.mobile.context.ApplicationContext;
@@ -69,7 +67,7 @@ public class SearchingPacketsFragment extends RoboFragment {
                 e.printStackTrace();
             }
             List<SearchPacketsPacketDTO> packets =
-                    new ArrayList<>(SearchPacketsPacketDTO.mapCollection(packetDTOs));
+                    new ArrayList<>(SearchPacketsPacketDTO.mapCollectionToDecorator(packetDTOs));
             searchPacketsAdapter =
                     new SearchPacketsAdapter((SearchingPacketsActivity) this.getActivity(),
                             packets,roundId);

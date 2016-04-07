@@ -15,10 +15,10 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Loading In"
             android:id="@+id/textView5"
-            android:layout_toEndOf="@+id/textView8"
+            android:layout_toEndOf="@+id/txtPacketsLeft"
             android:layout_marginTop="53dp"
             android:layout_centerVertical="true"
-            android:layout_above="@+id/textView6"
+            android:layout_above="@+id/txtCurrentPackage"
             android:layout_alignParentLeft="true"
             android:layout_alignParentRight="true"
             android:textAlignment="center" />
@@ -28,8 +28,8 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Current Package:"
-            android:id="@+id/textView6"
-            android:layout_above="@+id/textView8"
+            android:id="@+id/txtCurrentPackage"
+            android:layout_above="@+id/txtPacketsLeft"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
 
@@ -38,10 +38,10 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="packetId"
-            android:id="@+id/textView7"
-            android:layout_above="@+id/textView8"
-            android:layout_toRightOf="@+id/textView6"
-            android:layout_toEndOf="@+id/textView6"
+            android:id="@+id/txtPacketId"
+            android:layout_above="@+id/txtPacketsLeft"
+            android:layout_toRightOf="@+id/txtCurrentPackage"
+            android:layout_toEndOf="@+id/txtCurrentPackage"
             android:layout_marginLeft="5dp" />
 
         <Button
@@ -65,21 +65,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Lost"
-            android:id="@+id/button2"
+            android:id="@+id/btnLost"
             android:background="@drawable/rounded_button"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_alignEnd="@+id/button3"
-            android:layout_above="@+id/button3"
+            android:layout_alignEnd="@+id/btnConfirmVisually"
+            android:layout_above="@+id/btnConfirmVisually"
             android:textColor="#ffffff" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Confirm Visually"
-            android:id="@+id/button3"
+            android:id="@+id/btnConfirmVisually"
             android:background="@drawable/rounded_button"
             android:padding="5dp"
             android:layout_alignParentLeft="true"
@@ -95,20 +95,20 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Packets Left:"
-            android:id="@+id/textView8"
+            android:id="@+id/txtPacketsLeft"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_above="@+id/button2" />
+            android:layout_above="@+id/btnLost" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="amountOfPacketsLeft"
-            android:id="@+id/textView9"
+            android:id="@+id/txtAmountOfPacketsLeft"
             android:layout_alignEnd="@+id/textView5"
-            android:layout_above="@+id/button2"
-            android:layout_toLeftOf="@+id/textView8" />
+            android:layout_above="@+id/btnLost"
+            android:layout_toLeftOf="@+id/txtPacketsLeft" />
 
     </RelativeLayout>
 </FrameLayout>
