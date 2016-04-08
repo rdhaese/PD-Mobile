@@ -5,6 +5,7 @@ import android.app.Application;
 import be.rdhaese.packetdelivery.mobile.service.DeliveryRoundServiceProxyRestWebService;
 import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.dialog.DialogTool;
+import be.rdhaese.project.mobile.toast.ToastTool;
 
 /**
  * Created by RDEAX37 on 3/04/2016.
@@ -16,6 +17,7 @@ public class ApplicationExtension extends Application {
         ApplicationContext context = ApplicationContext.getInstance();
         context.putBean("roundService", new DeliveryRoundServiceProxyRestWebService());
         context.putBean("dialogTool", new DialogTool());
+        context.putBean("toastTool", new ToastTool());
         super.onCreate();
     }
 }
