@@ -29,6 +29,7 @@ import be.rdhaese.project.mobile.activity.SearchingPacketsActivity;
 import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.decorator.ParcelablePacketDTODecorator;
 import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
+import be.rdhaese.project.mobile.dialog.DialogTool;
 import be.rdhaese.project.mobile.task.EndRoundTask;
 import be.rdhaese.project.mobile.task.GetRoundPacketsTask;
 import be.rdhaese.project.mobile.task.MarkAsLostTask;
@@ -45,10 +46,12 @@ public class SearchPacketsAdapter extends BaseAdapter {
     private Long roundId;
 
     private DeliveryRoundWebService roundService;
+    private DialogTool dialogTool;
 
     {
         ApplicationContext context = ApplicationContext.getInstance();
         roundService = context.getBean("roundService");
+        dialogTool = context.getBean("dialogTool");
     }
 
     public SearchPacketsAdapter(SearchingPacketsActivity searchingPacketsActivity, List<SearchPacketsPacketDTO> packets, Long roundId) {
@@ -187,78 +190,157 @@ public class SearchPacketsAdapter extends BaseAdapter {
     }
 
     private void showConfirmContinueToNextActivityDialog(final SearchPacketsPacketDTO currentPacket, final SearchPacketListItemHolder holder) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(activityContext);
-        builder.setTitle("Go To Next Step")
-                .setMessage("Are you sure the information in the list is correct?")
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //undo last action
-                        holder.rowView.setBackgroundResource(0);
-                        currentPacket.setFound(false);
-                        currentPacket.setLost(false);
-                        holder.enableControls();
-                    }
-                })
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //ArrayList implementation needed to be able to put it on an intent
-                        ArrayList<SearchPacketsPacketDTO> packetsThatAreLeft = new ArrayList<>();
-                        for (SearchPacketsPacketDTO packet : packets) {
-                            if (packet.getLost()) {
-                                //Let the back end remove the packet
-                                //from the round and mark it as lost
-                                try {
-                                    Boolean removed = new MarkAsLostTask().execute(roundId, packet).get();
-                                    String message = String.format(
-                                            "Result of backend trying to mark packet [%s] for round [%s] as lost: [%s]",
-                                            packet.getPacketId(), roundId, removed);
-                                    Log.d(getClass().getSimpleName(), message);
-                                } catch (InterruptedException | ExecutionException e) {
-                                    String message = String.format(
-                                            "Could not mark packet [%s] for round [%s] as lost",
-                                            packet.getPacketId(), roundId);
-                                    Log.e(getClass().getSimpleName(), message, e);
-                                }
-
-                            } else {
-                                packetsThatAreLeft.add(packet);
-                            }
+        String title = "Go To Next Step";
+        String message = "Are you sure the information in the list is correct?";
+        DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //ArrayList implementation needed to be able to put it on an intent
+                ArrayList<SearchPacketsPacketDTO> packetsThatAreLeft = new ArrayList<>();
+                for (SearchPacketsPacketDTO packet : packets) {
+                    if (packet.getLost()) {
+                        //Let the back end remove the packet
+                        //from the round and mark it as lost
+                        try {
+                            Boolean removed = new MarkAsLostTask().execute(roundId, packet).get();
+                            String message = String.format(
+                                    "Result of backend trying to mark packet [%s] for round [%s] as lost: [%s]",
+                                    packet.getPacketId(), roundId, removed);
+                            Log.d(getClass().getSimpleName(), message);
+                        } catch (InterruptedException | ExecutionException e) {
+                            String message = String.format(
+                                    "Could not mark packet [%s] for round [%s] as lost",
+                                    packet.getPacketId(), roundId);
+                            Log.e(getClass().getSimpleName(), message, e);
                         }
 
-                        if (packetsThatAreLeft.size() == 0){
-                            //If no packets left -> the round ends
-                            try {
-                                //Let backend mark the round as ended
-                                Boolean roundEnded = new EndRoundTask().execute(roundId).get();
-                                String message = String.format(
-                                        "Result of backend trying to end round [%s]",
-                                        roundId);
-                                Log.d(getClass().getSimpleName(), message);
-                            } catch (InterruptedException | ExecutionException e) {
-                                String message = String.format(
-                                        "Could not end round [%s]",
-                                        roundId);
-                                Log.e(getClass().getSimpleName(), message, e);
-                            }
-
-                            //Go back to the start screen
-                            Intent intent = new Intent(activityContext, HomeScreenActivity.class);
-                            activityContext.startActivity(intent);
-                        }else { //The round can go on to the next screen
-                            //create intent with roundId and remaining packets
-                            Intent intent = new Intent(activityContext, LoadingInActivity.class);
-                            intent.putExtra("roundId", roundId);
-                            intent.putParcelableArrayListExtra("packets",
-                                                    new ArrayList<>(
-                                                            SearchPacketsPacketDTO.mapCollectionSearchPacketsToParcelableDTO(packetsThatAreLeft)));
-                            //show next activity
-                            activityContext.startActivity(intent);
-                        }
+                    } else {
+                        packetsThatAreLeft.add(packet);
                     }
-                });
-        builder.create().show();
+                }
+
+                if (packetsThatAreLeft.size() == 0) {
+                    //If no packets left -> the round ends
+                    try {
+                        //Let backend mark the round as ended
+                        Boolean roundEnded = new EndRoundTask().execute(roundId).get();
+                        String message = String.format(
+                                "Result of backend trying to end round [%s]",
+                                roundId);
+                        Log.d(getClass().getSimpleName(), message);
+                    } catch (InterruptedException | ExecutionException e) {
+                        String message = String.format(
+                                "Could not end round [%s]",
+                                roundId);
+                        Log.e(getClass().getSimpleName(), message, e);
+                    }
+
+                    //Go back to the start screen
+                    Intent intent = new Intent(activityContext, HomeScreenActivity.class);
+                    activityContext.startActivity(intent);
+                } else { //The round can go on to the next screen
+                    //create intent with roundId and remaining packets
+                    Intent intent = new Intent(activityContext, LoadingInActivity.class);
+                    intent.putExtra("roundId", roundId);
+                    intent.putParcelableArrayListExtra("packets",
+                            new ArrayList<>(
+                                    SearchPacketsPacketDTO.mapCollectionSearchPacketsToParcelableDTO(packetsThatAreLeft)));
+                    //show next activity
+                    activityContext.startActivity(intent);
+                }
+            }
+        };
+
+        DialogInterface.OnClickListener noListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //undo last action
+                holder.rowView.setBackgroundResource(0);
+                currentPacket.setFound(false);
+                currentPacket.setLost(false);
+                holder.enableControls();
+            }
+        };
+
+        dialogTool.yesNoDialog(
+                activityContext,
+                title,
+                message,
+                yesListener,
+                noListener)
+                .show();
+//        AlertDialog.Builder builder = new AlertDialog.Builder(activityContext);
+//        builder.setTitle("Go To Next Step")
+//                .setMessage("Are you sure the information in the list is correct?")
+//                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        //undo last action
+//                        holder.rowView.setBackgroundResource(0);
+//                        currentPacket.setFound(false);
+//                        currentPacket.setLost(false);
+//                        holder.enableControls();
+//                    }
+//                })
+//                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        //ArrayList implementation needed to be able to put it on an intent
+//                        ArrayList<SearchPacketsPacketDTO> packetsThatAreLeft = new ArrayList<>();
+//                        for (SearchPacketsPacketDTO packet : packets) {
+//                            if (packet.getLost()) {
+//                                //Let the back end remove the packet
+//                                //from the round and mark it as lost
+//                                try {
+//                                    Boolean removed = new MarkAsLostTask().execute(roundId, packet).get();
+//                                    String message = String.format(
+//                                            "Result of backend trying to mark packet [%s] for round [%s] as lost: [%s]",
+//                                            packet.getPacketId(), roundId, removed);
+//                                    Log.d(getClass().getSimpleName(), message);
+//                                } catch (InterruptedException | ExecutionException e) {
+//                                    String message = String.format(
+//                                            "Could not mark packet [%s] for round [%s] as lost",
+//                                            packet.getPacketId(), roundId);
+//                                    Log.e(getClass().getSimpleName(), message, e);
+//                                }
+//
+//                            } else {
+//                                packetsThatAreLeft.add(packet);
+//                            }
+//                        }
+//
+//                        if (packetsThatAreLeft.size() == 0) {
+//                            //If no packets left -> the round ends
+//                            try {
+//                                //Let backend mark the round as ended
+//                                Boolean roundEnded = new EndRoundTask().execute(roundId).get();
+//                                String message = String.format(
+//                                        "Result of backend trying to end round [%s]",
+//                                        roundId);
+//                                Log.d(getClass().getSimpleName(), message);
+//                            } catch (InterruptedException | ExecutionException e) {
+//                                String message = String.format(
+//                                        "Could not end round [%s]",
+//                                        roundId);
+//                                Log.e(getClass().getSimpleName(), message, e);
+//                            }
+//
+//                            //Go back to the start screen
+//                            Intent intent = new Intent(activityContext, HomeScreenActivity.class);
+//                            activityContext.startActivity(intent);
+//                        } else { //The round can go on to the next screen
+//                            //create intent with roundId and remaining packets
+//                            Intent intent = new Intent(activityContext, LoadingInActivity.class);
+//                            intent.putExtra("roundId", roundId);
+//                            intent.putParcelableArrayListExtra("packets",
+//                                    new ArrayList<>(
+//                                            SearchPacketsPacketDTO.mapCollectionSearchPacketsToParcelableDTO(packetsThatAreLeft)));
+//                            //show next activity
+//                            activityContext.startActivity(intent);
+//                        }
+//                    }
+//                });
+//        builder.create().show();
     }
 
     private boolean allPacketsAreTreated() {
