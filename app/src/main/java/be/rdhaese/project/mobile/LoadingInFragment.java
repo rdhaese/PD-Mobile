@@ -27,8 +27,10 @@ import java.util.concurrent.ExecutionException;
 import be.rdhaese.packetdelivery.dto.PacketDTO;
 import be.rdhaese.project.mobile.activity.LoadingInActivity;
 import be.rdhaese.project.mobile.activity.OngoingDeliveryActivity;
+import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.decorator.ParcelablePacketDTODecorator;
 import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
+import be.rdhaese.project.mobile.dialog.DialogTool;
 import be.rdhaese.project.mobile.task.MarkAsLostTask;
 import be.rdhaese.project.mobile.task.StartRoundTask;
 import roboguice.fragment.RoboFragment;
@@ -59,6 +61,13 @@ public class LoadingInFragment extends RoboFragment {
     private ArrayList<ParcelablePacketDTODecorator> packets;
 
     private PacketDTO currentPacket;
+
+    private DialogTool dialogTool;
+
+    {
+        ApplicationContext context = ApplicationContext.getInstance();
+        dialogTool = context.getBean("dialogTool");
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -106,44 +115,60 @@ public class LoadingInFragment extends RoboFragment {
         btnConfirmVisually.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick( View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Confirm Visually")
-                        .setMessage("Are you sure packet IDs match? This is your responsibility!")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                confirmVisually();
-                            }
-                        })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                //Prepare dialog
+                String title = "Confirm Visually";
+                String message = "Are you sure packet IDs match? This is your responsibility!";
+                DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        confirmVisually();
+                    }
+                };
+                DialogInterface.OnClickListener noListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //Do nothing
                     }
-                })
-                .create().show();
+                };
+
+                //Show dialog
+                dialogTool.yesNoDialog(
+                        getActivity(),
+                        title,
+                        message,
+                        yesListener,
+                        noListener
+                ).show();
             }
         });
 
         btnLost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Mark As Lost")
-                        .setMessage("Are you sure you want the packet as lost? This is your responsibility!")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                markAsLost();
-                            }
-                        })
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                //Do nothing
-                            }
-                        })
-                        .create().show();
+                //Prepare dialog
+                String title= "Mark As Lost";
+                String message = "Are you sure you want the packet as lost? This is your responsibility!";
+                DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        markAsLost();
+                    }
+                };
+                DialogInterface.OnClickListener noListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Do nothing
+                    }
+                };
+
+                //Show dialog
+                dialogTool.yesNoDialog(
+                        getActivity(),
+                        title,
+                        message,
+                        yesListener,
+                        noListener
+                ).show();
             }
         });
     }
@@ -188,16 +213,23 @@ public class LoadingInFragment extends RoboFragment {
             Toast.makeText(getActivity(), toastText, Toast.LENGTH_SHORT).show();
 
             //Ask if the courier is ready to start
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle("Start Round")
-                    .setMessage("Push 'Yes' to start the round.")
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            startRound();
-                        }
-                    })
-                    .create().show();
+            //Prepare dialog
+            String title = "Start Round";
+            String message = "Push 'Yes' to start the round.";
+            DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    startRound();
+                }
+            };
+
+            //Show dialog
+            dialogTool.yesDialog(
+                    getActivity(),
+                    title,
+                    message,
+                    yesListener
+            ).show();
         }else {
             //Start this activity again, the currentPacketIndex was incremented,
             //so the next packet will be shown.
