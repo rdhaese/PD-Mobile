@@ -31,6 +31,7 @@ import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.decorator.ParcelablePacketDTODecorator;
 import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
 import be.rdhaese.project.mobile.dialog.DialogTool;
+import be.rdhaese.project.mobile.dialog.listener.DoNothingListener;
 import be.rdhaese.project.mobile.task.MarkAsLostTask;
 import be.rdhaese.project.mobile.task.StartRoundTask;
 import roboguice.fragment.RoboFragment;
@@ -124,12 +125,7 @@ public class LoadingInFragment extends RoboFragment {
                         confirmVisually();
                     }
                 };
-                DialogInterface.OnClickListener noListener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Do nothing
-                    }
-                };
+                DialogInterface.OnClickListener noListener = new DoNothingListener();
 
                 //Show dialog
                 dialogTool.yesNoDialog(
@@ -154,12 +150,7 @@ public class LoadingInFragment extends RoboFragment {
                         markAsLost();
                     }
                 };
-                DialogInterface.OnClickListener noListener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Do nothing
-                    }
-                };
+                DialogInterface.OnClickListener noListener = new DoNothingListener();
 
                 //Show dialog
                 dialogTool.yesNoDialog(

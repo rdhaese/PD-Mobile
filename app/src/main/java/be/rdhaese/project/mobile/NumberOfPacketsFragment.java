@@ -26,6 +26,9 @@ import roboguice.inject.InjectView;
 
 public class NumberOfPacketsFragment extends RoboFragment {
 
+    //TODO moet op dit scherm kunnen annuleren volgens use case
+    //TODO mss ook beter om te vragen of hij zeker is dat hij een ronde wil starten, want geen weg terug
+
     private static final int MY_PERMISSIONS_REQUEST = 1;
 
     @InjectView(R.id.npNumberOfPackets)
