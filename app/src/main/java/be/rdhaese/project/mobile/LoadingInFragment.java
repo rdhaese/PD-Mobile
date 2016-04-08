@@ -1,36 +1,28 @@
 package be.rdhaese.project.mobile;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import be.rdhaese.packetdelivery.dto.PacketDTO;
 import be.rdhaese.project.mobile.activity.LoadingInActivity;
 import be.rdhaese.project.mobile.activity.OngoingDeliveryActivity;
+import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.decorator.ParcelablePacketDTODecorator;
-import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
+import be.rdhaese.project.mobile.dialog.DialogTool;
+import be.rdhaese.project.mobile.dialog.listener.DoNothingListener;
 import be.rdhaese.project.mobile.task.MarkAsLostTask;
 import be.rdhaese.project.mobile.task.StartRoundTask;
+import be.rdhaese.project.mobile.toast.ToastTool;
 import roboguice.fragment.RoboFragment;
 import roboguice.inject.InjectExtra;
 import roboguice.inject.InjectView;
@@ -60,6 +52,15 @@ public class LoadingInFragment extends RoboFragment {
 
     private PacketDTO currentPacket;
 
+    private DialogTool dialogTool;
+    private ToastTool toastTool;
+
+    {
+        ApplicationContext context = ApplicationContext.getInstance();
+        dialogTool = context.getBean("dialogTool");
+        toastTool = context.getBean("toastTool");
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -79,7 +80,7 @@ public class LoadingInFragment extends RoboFragment {
         packets = intent.getParcelableArrayListExtra("packets");
 
         //Nothing injected, means first packet -> index 0
-        if (currentPacketIndex == null){
+        if (currentPacketIndex == null) {
             currentPacketIndex = 0;
         }
 
@@ -105,45 +106,51 @@ public class LoadingInFragment extends RoboFragment {
 
         btnConfirmVisually.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick( View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Confirm Visually")
-                        .setMessage("Are you sure packet IDs match? This is your responsibility!")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                confirmVisually();
-                            }
-                        })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(View v) {
+                //Prepare dialog
+                String title = "Confirm Visually";
+                String message = "Are you sure packet IDs match? This is your responsibility!";
+                DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        //Do nothing
+                        confirmVisually();
                     }
-                })
-                .create().show();
+                };
+                DialogInterface.OnClickListener noListener = new DoNothingListener();
+
+                //Show dialog
+                dialogTool.yesNoDialog(
+                        getActivity(),
+                        title,
+                        message,
+                        yesListener,
+                        noListener
+                ).show();
             }
         });
 
         btnLost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Mark As Lost")
-                        .setMessage("Are you sure you want the packet as lost? This is your responsibility!")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                markAsLost();
-                            }
-                        })
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                //Do nothing
-                            }
-                        })
-                        .create().show();
+                //Prepare dialog
+                String title = "Mark As Lost";
+                String message = "Are you sure you want the packet as lost? This is your responsibility!";
+                DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        markAsLost();
+                    }
+                };
+                DialogInterface.OnClickListener noListener = new DoNothingListener();
+
+                //Show dialog
+                dialogTool.yesNoDialog(
+                        getActivity(),
+                        title,
+                        message,
+                        yesListener,
+                        noListener
+                ).show();
             }
         });
     }
@@ -157,48 +164,55 @@ public class LoadingInFragment extends RoboFragment {
         //Start scanner app activity from parent activity (LoadingInActivity)
         getActivity().startActivityForResult(intent, 0);
         //Get the scanned id from LoadingInActivity
-        String scannedId = ((LoadingInActivity)getActivity()).getPreviousScannedId();
+        String scannedId = ((LoadingInActivity) getActivity()).getPreviousScannedId();
 
         //TODO what if something goes wrong?
         if (scannedId.equals(currentPacket.getPacketId())) {
             //Success:
             String toastText = "Scan successful!";
-            Toast.makeText(getActivity(), toastText, Toast.LENGTH_SHORT).show();
+            toastTool.createToast(getActivity(), toastText).show();
             //Do nextPacket logic
             nextPacket();
         } else {
             //No success:
             //Show toast:
             String toastText = String.format("Scanned code did not match packet id %s", currentPacket.getPacketId());
-            Toast.makeText(getActivity(), toastText, Toast.LENGTH_SHORT).show();
+            toastTool.createToast(getActivity(), toastText).show();
         }
 
     }
 
-    private void confirmVisually(){
+    private void confirmVisually() {
         //Do nextPacket logic
-       nextPacket();
+        nextPacket();
     }
 
     private void nextPacket() {
         currentPacketIndex++;
-        if (currentPacketIndex >= packets.size()){
+        if (currentPacketIndex >= packets.size()) {
             //The last packet was handled -> the round can start
             String toastText = "All packets are loaded in.";
-            Toast.makeText(getActivity(), toastText, Toast.LENGTH_SHORT).show();
+            toastTool.createToast(getActivity(), toastText).show();
 
             //Ask if the courier is ready to start
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle("Start Round")
-                    .setMessage("Push 'Yes' to start the round.")
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            startRound();
-                        }
-                    })
-                    .create().show();
-        }else {
+            //Prepare dialog
+            String title = "Start Round";
+            String message = "Push 'Yes' to start the round.";
+            DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    startRound();
+                }
+            };
+
+            //Show dialog
+            dialogTool.yesDialog(
+                    getActivity(),
+                    title,
+                    message,
+                    yesListener
+            ).show();
+        } else {
             //Start this activity again, the currentPacketIndex was incremented,
             //so the next packet will be shown.
             Intent intent = new Intent(this.getActivity(), LoadingInActivity.class);
@@ -229,12 +243,12 @@ public class LoadingInFragment extends RoboFragment {
         startActivity(intent);
     }
 
-    private void markAsLost(){
+    private void markAsLost() {
         //Let the back end remove the packet
         //from the round and mark it as lost
         try {
             Boolean removed = new MarkAsLostTask().execute(roundId, currentPacket).get();
-            if (removed){
+            if (removed) {
                 packets.remove(currentPacketIndex);
             }
             String message = String.format(
