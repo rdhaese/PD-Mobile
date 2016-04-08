@@ -24,8 +24,6 @@ public class GetNewRoundTask extends AsyncTask<Integer,Void,Long> {
         if (params.length == 0) {
             return null;
         }
-        Long id = null;
-            id = roundService.newRound(params[0]);
-        return id;
+       return roundService.newRound(params[0]);
     }
 }

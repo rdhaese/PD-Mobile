@@ -14,7 +14,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Loading In"
-            android:id="@+id/textView5"
+            android:id="@+id/txtLoadingIn"
             android:layout_toEndOf="@+id/txtPacketsLeft"
             android:layout_marginTop="53dp"
             android:layout_centerVertical="true"
@@ -27,7 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Current Package:"
+            android:text="Current Packet:"
             android:id="@+id/txtCurrentPackage"
             android:layout_above="@+id/txtPacketsLeft"
             android:layout_alignParentLeft="true"
@@ -106,7 +106,7 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="amountOfPacketsLeft"
             android:id="@+id/txtAmountOfPacketsLeft"
-            android:layout_alignEnd="@+id/textView5"
+            android:layout_alignEnd="@+id/txtLoadingIn"
             android:layout_above="@+id/btnLost"
             android:layout_toLeftOf="@+id/txtPacketsLeft" />
 

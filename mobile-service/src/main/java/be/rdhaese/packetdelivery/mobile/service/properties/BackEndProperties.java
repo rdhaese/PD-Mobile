@@ -21,7 +21,7 @@ public class BackEndProperties {
 
     public BackEndProperties() throws IOException {
         try (InputStream propertiesAsInputStream =
-             getClass().getClassLoader().getResourceAsStream(PROPERTY_FILE_NAME)){
+                     getClass().getClassLoader().getResourceAsStream(PROPERTY_FILE_NAME)) {
             backEndProperties.load(propertiesAsInputStream);
         }
     }
@@ -63,10 +63,17 @@ public class BackEndProperties {
 
     public String getEndRoundUrl(Long roundId) {
         return String.format(
-                  "%s/%s%s",
+                "%s/%s%s",
                 getServerPath(),
                 backEndProperties.getProperty("endRound"),
-                roundId
-                );
+                roundId);
+    }
+
+    public String getStartRoundUrl(Long roundId) {
+        return String.format(
+                "%s/%s%s",
+                getServerPath(),
+                backEndProperties.getProperty("startRound"),
+                roundId);
     }
 }

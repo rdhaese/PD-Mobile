@@ -27,6 +27,7 @@ import be.rdhaese.project.mobile.activity.HomeScreenActivity;
 import be.rdhaese.project.mobile.activity.LoadingInActivity;
 import be.rdhaese.project.mobile.activity.SearchingPacketsActivity;
 import be.rdhaese.project.mobile.context.ApplicationContext;
+import be.rdhaese.project.mobile.decorator.ParcelablePacketDTODecorator;
 import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
 import be.rdhaese.project.mobile.task.EndRoundTask;
 import be.rdhaese.project.mobile.task.GetRoundPacketsTask;
@@ -203,16 +204,13 @@ public class SearchPacketsAdapter extends BaseAdapter {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //ArrayList implementation needed to be able to put it on an intent
-                        ArrayList<SearchPacketsPacketDTO> packetsThatAreLeft = new ArrayList<SearchPacketsPacketDTO>(packets);
+                        ArrayList<SearchPacketsPacketDTO> packetsThatAreLeft = new ArrayList<>();
                         for (SearchPacketsPacketDTO packet : packets) {
                             if (packet.getLost()) {
                                 //Let the back end remove the packet
                                 //from the round and mark it as lost
                                 try {
                                     Boolean removed = new MarkAsLostTask().execute(roundId, packet).get();
-                                    if (removed){
-                                        packetsThatAreLeft.remove(packet);
-                                    }
                                     String message = String.format(
                                             "Result of backend trying to mark packet [%s] for round [%s] as lost: [%s]",
                                             packet.getPacketId(), roundId, removed);
@@ -224,6 +222,8 @@ public class SearchPacketsAdapter extends BaseAdapter {
                                     Log.e(getClass().getSimpleName(), message, e);
                                 }
 
+                            } else {
+                                packetsThatAreLeft.add(packet);
                             }
                         }
 
@@ -250,7 +250,9 @@ public class SearchPacketsAdapter extends BaseAdapter {
                             //create intent with roundId and remaining packets
                             Intent intent = new Intent(activityContext, LoadingInActivity.class);
                             intent.putExtra("roundId", roundId);
-                            intent.putParcelableArrayListExtra("packets", packetsThatAreLeft);
+                            intent.putParcelableArrayListExtra("packets",
+                                                    new ArrayList<>(
+                                                            SearchPacketsPacketDTO.mapCollectionSearchPacketsToParcelableDTO(packetsThatAreLeft)));
                             //show next activity
                             activityContext.startActivity(intent);
                         }

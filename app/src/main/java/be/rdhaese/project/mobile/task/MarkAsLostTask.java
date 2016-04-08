@@ -21,6 +21,9 @@ public class MarkAsLostTask extends AsyncTask<Object, Void, Boolean> {
 
     @Override
     protected Boolean doInBackground(Object... params) {
+        if (params.length == 0) {
+            return false;
+        }
         Long roundId = (Long) params[0];
         PacketDTO packetDTO = (PacketDTO) params[1];
 

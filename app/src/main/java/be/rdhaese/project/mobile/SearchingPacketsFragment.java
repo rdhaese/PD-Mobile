@@ -15,6 +15,7 @@ import be.rdhaese.packetdelivery.dto.PacketDTO;
 import be.rdhaese.project.mobile.activity.SearchingPacketsActivity;
 import be.rdhaese.project.mobile.adapter.SearchPacketsAdapter;
 import be.rdhaese.project.mobile.context.ApplicationContext;
+import be.rdhaese.project.mobile.decorator.ParcelablePacketDTODecorator;
 import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
 import be.rdhaese.project.mobile.task.GetRoundPacketsTask;
 import roboguice.fragment.RoboFragment;
@@ -67,7 +68,7 @@ public class SearchingPacketsFragment extends RoboFragment {
                 e.printStackTrace();
             }
             List<SearchPacketsPacketDTO> packets =
-                    new ArrayList<>(SearchPacketsPacketDTO.mapCollectionToDecorator(packetDTOs));
+                    new ArrayList<>(SearchPacketsPacketDTO.mapCollectionPacketDTOToDecorator(packetDTOs));
             searchPacketsAdapter =
                     new SearchPacketsAdapter((SearchingPacketsActivity) this.getActivity(),
                             packets,roundId);

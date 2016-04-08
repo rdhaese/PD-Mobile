@@ -9,203 +9,209 @@ import java.util.Date;
 
 import be.rdhaese.packetdelivery.dto.PacketDTO;
 
-public class SearchPacketsPacketDTO extends PacketDTO implements Parcelable {
+public class SearchPacketsPacketDTO extends ParcelablePacketDTODecorator implements Parcelable {
 
-    private PacketDTO packetDTO;
+    private ParcelablePacketDTODecorator parcelablePacketDTODecorator;
     private Boolean found = false;
     private Boolean lost = false;
 
-    public static Collection<SearchPacketsPacketDTO> mapCollectionToDecorator(Collection<PacketDTO> packetDTOs){
+    public static Collection<SearchPacketsPacketDTO> mapCollectionPacketDTOToDecorator(Collection<PacketDTO> packetDTOs){
         Collection<SearchPacketsPacketDTO> searchPacketsPacketDTOs = new ArrayList<>();
         for (PacketDTO packetDTO : packetDTOs){
-            searchPacketsPacketDTOs.add(new SearchPacketsPacketDTO(packetDTO));
+            searchPacketsPacketDTOs.add(new SearchPacketsPacketDTO(new ParcelablePacketDTODecorator(packetDTO)));
         }
         return searchPacketsPacketDTOs;
     }
 
-    public static Collection<PacketDTO> mapCollectionToDTO(Collection<SearchPacketsPacketDTO> searchPacketsPacketDTOs){
+    public static Collection<PacketDTO> mapCollectionSearchPacketsToDTO(Collection<SearchPacketsPacketDTO> searchPacketsPacketDTOs){
         Collection<? extends PacketDTO> packetDTOs = new ArrayList<>(searchPacketsPacketDTOs);
         return (Collection<PacketDTO>) packetDTOs;
     }
 
-    public SearchPacketsPacketDTO(PacketDTO packetDTO){
-        this.packetDTO = packetDTO;
+    public static Collection<ParcelablePacketDTODecorator> mapCollectionSearchPacketsToParcelableDTO(Collection<SearchPacketsPacketDTO> searchPacketsPacketDTOs){
+        Collection<? extends ParcelablePacketDTODecorator> packetDTOs = new ArrayList<>(searchPacketsPacketDTOs);
+        return (Collection<ParcelablePacketDTODecorator>) packetDTOs;
+    }
+
+    public SearchPacketsPacketDTO(ParcelablePacketDTODecorator parcelablePacketDTODecorator){
+        super(parcelablePacketDTODecorator);
+        this.parcelablePacketDTODecorator = parcelablePacketDTODecorator;
     }
 
     public String getPacketId() {
-        return packetDTO.getPacketId();
+        return parcelablePacketDTODecorator.getPacketId();
     }
 
     public void setPacketId(String packetId) {
-        packetDTO.setPacketId(packetId);
+        parcelablePacketDTODecorator.setPacketId(packetId);
     }
 
     public String getPacketStatus() {
-        return packetDTO.getPacketStatus();
+        return parcelablePacketDTODecorator.getPacketStatus();
     }
 
     public void setPacketStatus(String packetStatus) {
-        packetDTO.setPacketStatus(packetStatus);
+        parcelablePacketDTODecorator.setPacketStatus(packetStatus);
     }
 
     public Date getStatusChangedOn() {
-        return packetDTO.getStatusChangedOn();
+        return parcelablePacketDTODecorator.getStatusChangedOn();
     }
 
     public void setStatusChangedOn(Date statusChangedOn) {
-        packetDTO.setStatusChangedOn(statusChangedOn);
+        parcelablePacketDTODecorator.setStatusChangedOn(statusChangedOn);
     }
 
     public String getClientName() {
-        return packetDTO.getClientName();
+        return parcelablePacketDTODecorator.getClientName();
     }
 
     public void setClientName(String clientName) {
-        packetDTO.setClientName(clientName);
+        parcelablePacketDTODecorator.setClientName(clientName);
     }
 
     public String getClientPhone() {
-        return packetDTO.getClientPhone();
+        return parcelablePacketDTODecorator.getClientPhone();
     }
 
     public void setClientPhone(String clientPhone) {
-        packetDTO.setClientPhone(clientPhone);
+        parcelablePacketDTODecorator.setClientPhone(clientPhone);
     }
 
     public String getClientEmail() {
-        return packetDTO.getClientEmail();
+        return parcelablePacketDTODecorator.getClientEmail();
     }
 
     public void setClientEmail(String clientEmail) {
-        packetDTO.setClientEmail(clientEmail);
+        parcelablePacketDTODecorator.setClientEmail(clientEmail);
     }
 
     public String getClientStreet() {
-        return packetDTO.getClientStreet();
+        return parcelablePacketDTODecorator.getClientStreet();
     }
 
     public void setClientStreet(String clientStreet) {
-        packetDTO.setClientStreet(clientStreet);
+        parcelablePacketDTODecorator.setClientStreet(clientStreet);
     }
 
     public String getClientNumber() {
-        return packetDTO.getClientNumber();
+        return parcelablePacketDTODecorator.getClientNumber();
     }
 
     public void setClientNumber(String clientNumber) {
-        packetDTO.setClientNumber(clientNumber);
+        parcelablePacketDTODecorator.setClientNumber(clientNumber);
     }
 
     public String getClientMailbox() {
-        return packetDTO.getClientMailbox();
+        return parcelablePacketDTODecorator.getClientMailbox();
     }
 
     public void setClientMailbox(String clientMailbox) {
-        packetDTO.setClientMailbox(clientMailbox);
+        parcelablePacketDTODecorator.setClientMailbox(clientMailbox);
     }
 
     public String getClientCity() {
-        return packetDTO.getClientCity();
+        return parcelablePacketDTODecorator.getClientCity();
     }
 
     public void setClientCity(String clientCity) {
-        packetDTO.setClientCity(clientCity);
+        parcelablePacketDTODecorator.setClientCity(clientCity);
     }
 
     public String getClientPostalCode() {
-        return packetDTO.getClientPostalCode();
+        return parcelablePacketDTODecorator.getClientPostalCode();
     }
 
     public void setClientPostalCode(String clientPostalCode) {
-        packetDTO.setClientPostalCode(clientPostalCode);
+        parcelablePacketDTODecorator.setClientPostalCode(clientPostalCode);
     }
 
     public String getDeliveryName() {
-        return packetDTO.getDeliveryName();
+        return parcelablePacketDTODecorator.getDeliveryName();
     }
 
     public void setDeliveryName(String deliveryName) {
-        packetDTO.setDeliveryName(deliveryName);
+        parcelablePacketDTODecorator.setDeliveryName(deliveryName);
     }
 
     public String getDeliveryPhone() {
-        return packetDTO.getDeliveryPhone();
+        return parcelablePacketDTODecorator.getDeliveryPhone();
     }
 
     public void setDeliveryPhone(String deliveryPhone) {
-        packetDTO.setDeliveryPhone(deliveryPhone);
+        parcelablePacketDTODecorator.setDeliveryPhone(deliveryPhone);
     }
 
     public String getDeliveryEmail() {
-        return packetDTO.getDeliveryEmail();
+        return parcelablePacketDTODecorator.getDeliveryEmail();
     }
 
     public void setDeliveryEmail(String deliveryEmail) {
-        packetDTO.setDeliveryEmail(deliveryEmail);
+        parcelablePacketDTODecorator.setDeliveryEmail(deliveryEmail);
     }
 
     public String getDeliveryStreet() {
-        return packetDTO.getDeliveryStreet();
+        return parcelablePacketDTODecorator.getDeliveryStreet();
     }
 
     public void setDeliveryStreet(String deliveryStreet) {
-        packetDTO.setClientStreet(deliveryStreet);
+        parcelablePacketDTODecorator.setClientStreet(deliveryStreet);
     }
 
     public String getDeliveryNumber() {
-        return packetDTO.getDeliveryNumber();
+        return parcelablePacketDTODecorator.getDeliveryNumber();
     }
 
     public void setDeliveryNumber(String deliveryNumber) {
-        packetDTO.setDeliveryNumber(deliveryNumber);
+        parcelablePacketDTODecorator.setDeliveryNumber(deliveryNumber);
     }
 
     public String getDeliveryMailbox() {
-        return packetDTO.getDeliveryMailbox();
+        return parcelablePacketDTODecorator.getDeliveryMailbox();
     }
 
     public void setDeliveryMailbox(String deliveryMailbox) {
-        packetDTO.setDeliveryMailbox(deliveryMailbox);
+        parcelablePacketDTODecorator.setDeliveryMailbox(deliveryMailbox);
     }
 
     public String getDeliveryCity() {
-        return packetDTO.getDeliveryCity();
+        return parcelablePacketDTODecorator.getDeliveryCity();
     }
 
     public void setDeliveryCity(String deliveryCity) {
-        packetDTO.setDeliveryCity(deliveryCity);
+        parcelablePacketDTODecorator.setDeliveryCity(deliveryCity);
     }
 
     public String getDeliveryPostalCode() {
-        return packetDTO.getDeliveryPostalCode();
+        return parcelablePacketDTODecorator.getDeliveryPostalCode();
     }
 
     public void setDeliveryPostalCode(String deliveryPostalCode) {
-        packetDTO.setDeliveryPostalCode(deliveryPostalCode);
+        parcelablePacketDTODecorator.setDeliveryPostalCode(deliveryPostalCode);
     }
 
     public String getDeliveryRegionName() {
-        return packetDTO.getDeliveryRegionName();
+        return parcelablePacketDTODecorator.getDeliveryRegionName();
     }
 
     public void setDeliveryRegionName(String deliveryRegionName) {
-        packetDTO.setDeliveryRegionName(deliveryRegionName);
+        parcelablePacketDTODecorator.setDeliveryRegionName(deliveryRegionName);
     }
 
     public String getDeliveryRegionCode() {
-        return packetDTO.getDeliveryRegionCode();
+        return parcelablePacketDTODecorator.getDeliveryRegionCode();
     }
 
     public void setDeliveryRegionCode(String deliveryRegionCode) {
-        packetDTO.setDeliveryRegionCode(deliveryRegionCode);
+        parcelablePacketDTODecorator.setDeliveryRegionCode(deliveryRegionCode);
     }
 
-    public PacketDTO getPacketDTO() {
-        return packetDTO;
+    public ParcelablePacketDTODecorator getParcelablePacketDTODecorator() {
+        return parcelablePacketDTODecorator;
     }
 
-    public void setPacketDTO(PacketDTO packetDTO) {
-        this.packetDTO = packetDTO;
+    public void setParcelablePacketDTODecorator(ParcelablePacketDTODecorator parcelablePacketDTODecorator) {
+        this.parcelablePacketDTODecorator = parcelablePacketDTODecorator;
     }
 
     public Boolean getFound() {
@@ -225,7 +231,7 @@ public class SearchPacketsPacketDTO extends PacketDTO implements Parcelable {
     }
 
     protected SearchPacketsPacketDTO(Parcel in) {
-        packetDTO = (PacketDTO) in.readValue(PacketDTO.class.getClassLoader());
+        parcelablePacketDTODecorator = (ParcelablePacketDTODecorator) in.readValue(PacketDTO.class.getClassLoader());
         byte foundVal = in.readByte();
         found = foundVal == 0x02 ? null : foundVal != 0x00;
         byte lostVal = in.readByte();
@@ -239,7 +245,7 @@ public class SearchPacketsPacketDTO extends PacketDTO implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeValue(packetDTO);
+        dest.writeValue(parcelablePacketDTODecorator);
         if (found == null) {
             dest.writeByte((byte) (0x02));
         } else {

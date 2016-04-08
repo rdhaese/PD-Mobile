@@ -12,4 +12,18 @@ import roboguice.inject.ContentView;
 @ContentView(R.layout.activity_loading_in)
 public class LoadingInActivity extends RoboFragmentActivity {
 
+    private String previousScannedId = null;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 0){
+            if (resultCode == RESULT_OK){
+                previousScannedId = data.getStringExtra("SCAN_RESULT");
+            }
+        }
+    }
+
+    public String getPreviousScannedId() {
+        return previousScannedId;
+    }
 }

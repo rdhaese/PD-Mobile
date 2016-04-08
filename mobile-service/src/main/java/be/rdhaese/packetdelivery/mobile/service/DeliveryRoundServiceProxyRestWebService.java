@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+//import be.rdhaese.packetdelivery.back_end.application.web_service.interfaces.DeliveryRoundWebService;
 import be.rdhaese.packetdelivery.back_end.application.web_service.interfaces.DeliveryRoundWebService;
 import be.rdhaese.packetdelivery.dto.LongLatDTO;
 import be.rdhaese.packetdelivery.dto.PacketDTO;
@@ -58,30 +59,38 @@ public class DeliveryRoundServiceProxyRestWebService implements DeliveryRoundWeb
         vars.put("roundId", roundId);
         return restTemplate.postForObject(backEndProperties.getMarkAsLostUrl(), packetDTO, Boolean.class, vars);
     }
-   // @Override
+
+    // @Override
     public Boolean deliver(Long roundId, PacketDTO packetDTO) {
         return null;
     }
 
-   // @Override
+    // @Override
     public Boolean cannotDeliver(Long roundId, PacketDTO packetDTO, String s) {
         return null;
     }
 
-   // @Override
+    // @Override
     public Boolean addRemark(Long roundId, String s) {
         return null;
     }
 
-   // @Override
+    // @Override
     public Boolean addLocationUpdate(Long roundId, LongLatDTO longLatDTO) {
         return null;
     }
 
-    @Override
+    //@Override
     public Boolean endRound(Long roundId) {
         return restTemplate.getForObject(
                 backEndProperties.getEndRoundUrl(roundId),
                 Boolean.class);
+    }
+
+    @Override
+    public Boolean startRound(Long roundId) {
+       return restTemplate.getForObject(
+               backEndProperties.getStartRoundUrl(roundId),
+               Boolean.class);
     }
 }
