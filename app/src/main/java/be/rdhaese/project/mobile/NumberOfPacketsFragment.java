@@ -3,6 +3,7 @@ package be.rdhaese.project.mobile;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -18,8 +19,13 @@ import android.widget.NumberPicker;
 
 import java.util.concurrent.ExecutionException;
 
+import be.rdhaese.project.mobile.activity.HomeScreenActivity;
 import be.rdhaese.project.mobile.activity.SearchingPacketsActivity;
+import be.rdhaese.project.mobile.context.ApplicationContext;
+import be.rdhaese.project.mobile.dialog.DialogTool;
+import be.rdhaese.project.mobile.dialog.listener.DoNothingListener;
 import be.rdhaese.project.mobile.task.GetNewRoundTask;
+import be.rdhaese.project.mobile.toast.ToastTool;
 import roboguice.fragment.RoboFragment;
 import roboguice.inject.InjectView;
 
@@ -30,11 +36,21 @@ public class NumberOfPacketsFragment extends RoboFragment {
     //TODO mss ook beter om te vragen of hij zeker is dat hij een ronde wil starten, want geen weg terug
 
     private static final int MY_PERMISSIONS_REQUEST = 1;
+    private static final Long INVALID_ROUND = -1L;
 
     @InjectView(R.id.npNumberOfPackets)
     private NumberPicker npNumberOfPackets;
     @InjectView(R.id.btnStartRound)
     private Button btnStartRound;
+
+    private DialogTool dialogTool;
+    private ToastTool toastTool;
+
+    {
+        ApplicationContext context = ApplicationContext.getInstance();
+        dialogTool = context.getBean("dialogTool");
+        toastTool = context.getBean("toastTool");
+    }
 
     private void init() {
         npNumberOfPackets.setMinValue(1);
@@ -99,9 +115,21 @@ public class NumberOfPacketsFragment extends RoboFragment {
             Integer amountOfPackets = npNumberOfPackets.getValue();
             Long roundId = new GetNewRoundTask().execute(amountOfPackets
             ).get();
-            Intent intent = new Intent(this.getActivity(), SearchingPacketsActivity.class);
-            intent.putExtra("roundId", roundId);
-            startActivity(intent);
+
+            if (INVALID_ROUND.equals(roundId)) {
+                //If returned roundId equals -1, it means there where no packets to start a round.
+
+                //Show HomeScreenActiviy again with a message
+                Intent intent = new Intent(getActivity(), HomeScreenActivity.class);
+                String message = "No packets found to start a round. Please contact management.";
+                intent.putExtra("message",message);
+                startActivity(intent);
+            } else {
+                //A valid roundId is returned, we can go on to the next activity
+                Intent intent = new Intent(this.getActivity(), SearchingPacketsActivity.class);
+                intent.putExtra("roundId", roundId);
+                startActivity(intent);
+            }
         } catch (InterruptedException e) {
             //TODO handle this
             e.printStackTrace();
@@ -111,9 +139,26 @@ public class NumberOfPacketsFragment extends RoboFragment {
         }
     }
 
-    public void startRound(View view) throws ExecutionException, InterruptedException {
-        //TODO ask if sure; no turning back
-        askPermissionIfNecessaryAndStartRound(view);
+    public void startRound(final View view) throws ExecutionException, InterruptedException {
+        //Ask if the courier is sure, no turning back afterwards
+        //Prepare the dialog
+        String title = "No Turning Back";
+        String message = "Are you sure you want to start the round? There is no turning back after! You'll have to finish the round.";
+        DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                askPermissionIfNecessaryAndStartRound(view);
+            }
+        };
+        DialogInterface.OnClickListener noListener = new DoNothingListener();
+        //Show dialog
+        dialogTool.yesNoDialog(
+                getActivity(),
+                title,
+                message,
+                yesListener,
+                noListener)
+                .show();
     }
 
     private void askPermissionIfNecessaryAndStartRound(View view) {

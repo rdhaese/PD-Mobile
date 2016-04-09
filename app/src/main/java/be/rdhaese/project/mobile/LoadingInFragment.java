@@ -44,11 +44,13 @@ public class LoadingInFragment extends RoboFragment {
     @InjectView(R.id.txtAmountOfPacketsLeft)
     private TextView txtAmountOfPacketsLeft;
 
-    @InjectExtra(value = "roundId", optional = false)
+    @InjectExtra("roundId")
     private Long roundId;
+    @InjectExtra("packets")
+    private ArrayList<ParcelablePacketDTODecorator> packets;
     @InjectExtra(value = "currentPacketIndex", optional = true)
     private Integer currentPacketIndex;
-    private ArrayList<ParcelablePacketDTODecorator> packets;
+
 
     private PacketDTO currentPacket;
 
@@ -75,10 +77,6 @@ public class LoadingInFragment extends RoboFragment {
     }
 
     private void init() {
-        //Load packets from intent
-        Intent intent = getActivity().getIntent();
-        packets = intent.getParcelableArrayListExtra("packets");
-
         //Nothing injected, means first packet -> index 0
         if (currentPacketIndex == null) {
             currentPacketIndex = 0;
@@ -87,7 +85,7 @@ public class LoadingInFragment extends RoboFragment {
         //Set currentPacket
         currentPacket = packets.get(currentPacketIndex);
 
-        //Initialize textfields
+        //Initialize TextViews
         txtPacketId.setText(currentPacket.getPacketId());
         int packetsSize = packets.size();
         String amountOfPacketsLeftText = String.format(
@@ -97,6 +95,7 @@ public class LoadingInFragment extends RoboFragment {
         );
         txtAmountOfPacketsLeft.setText(amountOfPacketsLeftText);
 
+        //Set buttons onClickListener
         btnScan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

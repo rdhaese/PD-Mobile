@@ -22,6 +22,10 @@ public class StartRoundTask extends AsyncTask<Long,Void,Boolean> {
         if (params.length == 0){
             return false;
         }
-        return roundService.startRound(params[0]);
+        Boolean roundStartedInBackEnd = roundService.startRound(params[0]);
+        if (roundStartedInBackEnd){
+            //TODO start thread that sends location updates
+        }
+        return roundStartedInBackEnd;
     }
 }

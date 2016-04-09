@@ -35,6 +35,25 @@ public class ParcelablePacketDTODecorator extends PacketDTO implements Parcelabl
         return (Collection<PacketDTO>) packetDTOs;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        ParcelablePacketDTODecorator that = (ParcelablePacketDTODecorator) o;
+
+        return !(packetDTO != null ? !packetDTO.equals(that.packetDTO) : that.packetDTO != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (packetDTO != null ? packetDTO.hashCode() : 0);
+        return result;
+    }
+
     public String getPacketId() {
         return packetDTO.getPacketId();
     }

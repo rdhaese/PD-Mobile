@@ -127,7 +127,7 @@ public class SearchPacketsAdapter extends BaseAdapter {
                     String scannedId = activityContext.getPreviousScannedId();
 
                     //TODO what if something goes wrong?
-                    if (scannedId.equals(currentPacket.getPacketId())) {
+                    if (currentPacket.getPacketId().equals(scannedId)) {
                         //Success:
                         //Construct toast text
                         foundPacket(scannedId);

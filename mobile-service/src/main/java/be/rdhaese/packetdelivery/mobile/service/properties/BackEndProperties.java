@@ -76,4 +76,29 @@ public class BackEndProperties {
                 backEndProperties.getProperty("startRound"),
                 roundId);
     }
+
+    public String getAddRemarkUrl(String remark) {
+        return String.format(
+                "%s/%s%s",
+                getServerPath(),
+                backEndProperties.getProperty("addRemark"),
+                remark);
+    }
+
+    public String getCannotDeliverPath(String reason){
+        return String.format(
+                "%s/%s%s",
+                getServerPath(),
+                backEndProperties.getProperty("cannotDeliver"),
+                reason
+        );
+    }
+
+    public String getDeliverUrl(){
+        return String.format(
+                "%s/%s",
+                getServerPath(),
+                backEndProperties.getProperty("deliver")
+        );
+    }
 }
