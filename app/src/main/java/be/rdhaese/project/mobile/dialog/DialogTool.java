@@ -2,17 +2,22 @@ package be.rdhaese.project.mobile.dialog;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.GradientDrawable;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
+import be.rdhaese.project.mobile.dialog.listener.DoNothingListener;
 import be.rdhaese.project.mobile.task.MarkAsLostTask;
 
 /**
@@ -20,46 +25,43 @@ import be.rdhaese.project.mobile.task.MarkAsLostTask;
  */
 public class DialogTool {
 
-    public AlertDialog yesNoDialog(Activity activityContext, String title, String message, DialogInterface.OnClickListener yesListener, DialogInterface.OnClickListener noListener) {
+    public AlertDialog yesNoDialog(Context context, String title, String message, DialogInterface.OnClickListener yesListener, DialogInterface.OnClickListener noListener) {
         //Create dialog
-        AlertDialog dialog = new AlertDialog.Builder(activityContext)
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setCancelable(false)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton("Yes", yesListener)
                 .setNegativeButton("No", noListener)
                 .create();
 
-        //Edit dialog window:
-        Window window = dialog.getWindow();
-        WindowManager.LayoutParams wlp = window.getAttributes();
-        //Setting dialog location...
-        switch (activityContext.getResources().getConfiguration().orientation){
-            case 2: //ORIENTATION_LANDSCAPE
-                //... to the right when in landscape mode
-                wlp.gravity = Gravity.RIGHT;
-                break;
-            default: //In case of ORIENTATION_PORTRAIT or ORIENTATION_UNDEFINED
-                //... to the bottom in any portrait or undefined mode
-                wlp.gravity = Gravity.BOTTOM;
-                break;
-        }
+        //Edit dialog location
+        setDialogLocation(context, dialog);
 
         return dialog;
     }
 
-    public AlertDialog yesDialog(Activity activityContext, String title, String message, DialogInterface.OnClickListener yesListener) {
+    public AlertDialog yesDialog(Context context, String title, String message, DialogInterface.OnClickListener yesListener) {
         //Create dialog
-        AlertDialog dialog = new AlertDialog.Builder(activityContext)
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setCancelable(false)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton("Yes", yesListener)
                 .create();
 
-        //Edit dialog window:
+        //Edit dialog location
+        setDialogLocation(context, dialog);
+
+        return dialog;
+    }
+
+    public void setDialogLocation(Context context, AlertDialog dialog) {
+        //Get LayoutParams of dialog's window
         Window window = dialog.getWindow();
         WindowManager.LayoutParams wlp = window.getAttributes();
         //Setting dialog location...
-        switch (activityContext.getResources().getConfiguration().orientation){
+        switch (context.getResources().getConfiguration().orientation){
             case 2: //ORIENTATION_LANDSCAPE
                 //... to the right when in landscape mode
                 wlp.gravity = Gravity.RIGHT;
@@ -69,7 +71,5 @@ public class DialogTool {
                 wlp.gravity = Gravity.BOTTOM;
                 break;
         }
-
-        return dialog;
     }
 }

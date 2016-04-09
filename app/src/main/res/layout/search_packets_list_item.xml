@@ -45,6 +45,7 @@
             android:layout_height="wrap_content"
             android:text="Scan"
             android:layout_gravity="right"
-            android:id="@+id/btnScan" />
+            android:id="@+id/btnScan"
+            android:background="@drawable/rounded_button"/>
     </LinearLayout>
 </LinearLayout>

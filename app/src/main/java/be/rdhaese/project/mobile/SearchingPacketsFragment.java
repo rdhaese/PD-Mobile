@@ -36,7 +36,7 @@ public class SearchingPacketsFragment extends RoboFragment {
     @InjectView(R.id.lvwPackets)
     private ListView lvwPackets;
 
-    @InjectExtra(value = "roundId", optional = false)
+    @InjectExtra("roundId")
     private Long roundId;
 
     private SearchPacketsAdapter searchPacketsAdapter;

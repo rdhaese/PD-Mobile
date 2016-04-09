@@ -38,6 +38,30 @@ public class SearchPacketsPacketDTO extends ParcelablePacketDTODecorator impleme
         this.parcelablePacketDTODecorator = parcelablePacketDTODecorator;
     }
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        SearchPacketsPacketDTO that = (SearchPacketsPacketDTO) o;
+
+        if (parcelablePacketDTODecorator != null ? !parcelablePacketDTODecorator.equals(that.parcelablePacketDTODecorator) : that.parcelablePacketDTODecorator != null)
+            return false;
+        if (found != null ? !found.equals(that.found) : that.found != null) return false;
+        return !(lost != null ? !lost.equals(that.lost) : that.lost != null);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (parcelablePacketDTODecorator != null ? parcelablePacketDTODecorator.hashCode() : 0);
+        result = 31 * result + (found != null ? found.hashCode() : 0);
+        result = 31 * result + (lost != null ? lost.hashCode() : 0);
+        return result;
+    }
+
     public String getPacketId() {
         return parcelablePacketDTODecorator.getPacketId();
     }

@@ -1,13 +1,10 @@
 package be.rdhaese.packetdelivery.mobile.service;
 
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
 import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -62,17 +59,23 @@ public class DeliveryRoundServiceProxyRestWebService implements DeliveryRoundWeb
 
     // @Override
     public Boolean deliver(Long roundId, PacketDTO packetDTO) {
-        return null;
+        Map<String, Long> vars = new HashMap<String, Long>();
+        vars.put("roundId", roundId);
+        return restTemplate.postForObject(backEndProperties.getDeliverUrl(), packetDTO, Boolean.class, vars);
     }
 
     // @Override
-    public Boolean cannotDeliver(Long roundId, PacketDTO packetDTO, String s) {
-        return null;
+    public Boolean cannotDeliver(Long roundId, PacketDTO packetDTO, String reason) {
+        Map<String, Long> vars = new HashMap<String, Long>();
+        vars.put("roundId", roundId);
+        return restTemplate.postForObject(backEndProperties.getCannotDeliverPath(reason), packetDTO, Boolean.class, vars);
     }
 
     // @Override
-    public Boolean addRemark(Long roundId, String s) {
-        return null;
+    public Boolean addRemark(Long roundId, String remark) {
+        Map<String, Long> vars = new HashMap<String, Long>();
+        vars.put("roundId", roundId);
+        return restTemplate.getForObject(backEndProperties.getAddRemarkUrl(remark), Boolean.class, vars);
     }
 
     // @Override

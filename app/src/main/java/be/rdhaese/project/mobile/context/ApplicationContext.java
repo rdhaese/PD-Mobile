@@ -18,7 +18,6 @@ public class ApplicationContext {
 
     public static ApplicationContext getInstance(){
         if (instance == null){
-            Log.e("WTFTAG", "BEEN HERE");
             instance = new ApplicationContext();
         }
         return instance;

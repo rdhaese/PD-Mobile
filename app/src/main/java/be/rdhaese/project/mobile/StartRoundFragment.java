@@ -11,13 +11,26 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import be.rdhaese.project.mobile.activity.NumberOfPacketsActivity;
+import be.rdhaese.project.mobile.context.ApplicationContext;
+import be.rdhaese.project.mobile.toast.ToastTool;
 import roboguice.fragment.RoboFragment;
+import roboguice.inject.InjectExtra;
 import roboguice.inject.InjectView;
 
 public class StartRoundFragment extends RoboFragment {
 
     @InjectView(R.id.btnStartNewRound)
     private Button btnStartNewRound;
+
+    @InjectExtra(value = "message", optional = true)
+    private String message;
+
+    private ToastTool toastTool;
+
+    {
+        ApplicationContext context = ApplicationContext.getInstance();
+        toastTool = context.getBean("toastTool");
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -33,6 +46,9 @@ public class StartRoundFragment extends RoboFragment {
     }
 
     private void init() {
+        if (message != null){
+            toastTool.createToast(getActivity(), message);
+        }
         btnStartNewRound.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
