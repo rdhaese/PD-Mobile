@@ -214,12 +214,36 @@ public class SearchPacketsPacketDTO extends ParcelablePacketDTODecorator impleme
         parcelablePacketDTODecorator.setDeliveryPostalCode(deliveryPostalCode);
     }
 
-    public String getDeliveryRegionName() {
-        return parcelablePacketDTODecorator.getDeliveryRegionName();
+    public String getDeliveryRegionNameNl() {
+        return parcelablePacketDTODecorator.getDeliveryRegionNameNl();
     }
 
-    public void setDeliveryRegionName(String deliveryRegionName) {
-        parcelablePacketDTODecorator.setDeliveryRegionName(deliveryRegionName);
+    public void setDeliveryRegionNameNl(String deliveryRegionName) {
+        parcelablePacketDTODecorator.setDeliveryRegionNameNl(deliveryRegionName);
+    }
+
+    public String getDeliveryRegionNameFr() {
+        return parcelablePacketDTODecorator.getDeliveryRegionNameFr();
+    }
+
+    public void setDeliveryRegionNameFr(String deliveryRegionName) {
+        parcelablePacketDTODecorator.setDeliveryRegionNameFr(deliveryRegionName);
+    }
+
+    public String getDeliveryRegionNameDe() {
+        return parcelablePacketDTODecorator.getDeliveryRegionNameDe();
+    }
+
+    public void setDeliveryRegionNameDe(String deliveryRegionName) {
+        parcelablePacketDTODecorator.setDeliveryRegionNameDe(deliveryRegionName);
+    }
+
+    public String getDeliveryRegionNameEn() {
+        return parcelablePacketDTODecorator.getDeliveryRegionNameEn();
+    }
+
+    public void setDeliveryRegionNameEn(String deliveryRegionName) {
+        parcelablePacketDTODecorator.setDeliveryRegionNameEn(deliveryRegionName);
     }
 
     public String getDeliveryRegionCode() {

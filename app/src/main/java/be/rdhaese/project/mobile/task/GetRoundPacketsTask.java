@@ -2,6 +2,7 @@ package be.rdhaese.project.mobile.task;
 
 import android.os.AsyncTask;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import be.rdhaese.packetdelivery.back_end.application.web_service.interfaces.DeliveryRoundWebService;
@@ -24,6 +25,12 @@ public class GetRoundPacketsTask extends AsyncTask<Long,Void,List<PacketDTO>> {
         if (params.length == 0) {
             return null;
         }
-        return  roundService.getPackets(params[0]);
+        try {
+            return roundService.getPackets(params[0]);
+        } catch (Exception e){
+            e.printStackTrace();
+            //TODO handle this
+        }
+        return null;
     }
 }

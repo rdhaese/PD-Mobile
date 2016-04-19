@@ -206,12 +206,36 @@ public class ParcelablePacketDTODecorator extends PacketDTO implements Parcelabl
         packetDTO.setDeliveryPostalCode(deliveryPostalCode);
     }
 
-    public String getDeliveryRegionName() {
-        return packetDTO.getDeliveryRegionName();
+    public String getDeliveryRegionNameNl() {
+        return packetDTO.getDeliveryRegionNameNl();
     }
 
-    public void setDeliveryRegionName(String deliveryRegionName) {
-        packetDTO.setDeliveryRegionName(deliveryRegionName);
+    public void setDeliveryRegionNameNl(String deliveryRegionName) {
+        packetDTO.setDeliveryRegionNameNl(deliveryRegionName);
+    }
+
+    public String getDeliveryRegionNameFr() {
+        return packetDTO.getDeliveryRegionNameFr();
+    }
+
+    public void setDeliveryRegionNameFr(String deliveryRegionName) {
+        packetDTO.setDeliveryRegionNameFr(deliveryRegionName);
+    }
+
+    public String getDeliveryRegionNameDe() {
+        return packetDTO.getDeliveryRegionNameDe();
+    }
+
+    public void setDeliveryRegionNameDe(String deliveryRegionName) {
+        packetDTO.setDeliveryRegionNameDe(deliveryRegionName);
+    }
+
+    public String getDeliveryRegionNameEn() {
+        return packetDTO.getDeliveryRegionNameEn();
+    }
+
+    public void setDeliveryRegionNameEn(String deliveryRegionName) {
+        packetDTO.setDeliveryRegionNameEn(deliveryRegionName);
     }
 
     public String getDeliveryRegionCode() {

@@ -3,12 +3,14 @@
     package="be.rdhaese.project.mobile">
 
     <!-- <uses-permission-sdk-23 android:name="android.permission.INTERNET" /> -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> -->
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/icon"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
@@ -23,7 +25,9 @@
         <activity android:name=".activity.NumberOfPacketsActivity" />
         <activity android:name=".activity.LoadingInActivity" />
         <activity android:name=".activity.SearchingPacketsActivity" />
-        <activity android:name=".activity.OngoingDeliveryActivity"></activity>
+        <activity android:name=".activity.OngoingDeliveryActivity" />
+
+        <service android:enabled="true" android:name=".location.LocationUpdateService" />
     </application>
 
 </manifest>

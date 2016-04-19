@@ -68,7 +68,7 @@ public class DeliveryRoundServiceProxyRestWebService implements DeliveryRoundWeb
     public Boolean cannotDeliver(Long roundId, PacketDTO packetDTO, String reason) {
         Map<String, Long> vars = new HashMap<String, Long>();
         vars.put("roundId", roundId);
-        return restTemplate.postForObject(backEndProperties.getCannotDeliverPath(reason), packetDTO, Boolean.class, vars);
+        return restTemplate.postForObject(backEndProperties.getCannotDeliverUrl(reason), packetDTO, Boolean.class, vars);
     }
 
     // @Override
@@ -80,7 +80,9 @@ public class DeliveryRoundServiceProxyRestWebService implements DeliveryRoundWeb
 
     // @Override
     public Boolean addLocationUpdate(Long roundId, LongLatDTO longLatDTO) {
-        return null;
+        Map<String, Long> vars = new HashMap<String, Long>();
+        vars.put("roundId", roundId);
+        return restTemplate.postForObject(backEndProperties.getAddLocationUpdateUrl(), longLatDTO, Boolean.class, vars);
     }
 
     //@Override

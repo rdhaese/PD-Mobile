@@ -85,7 +85,7 @@ public class BackEndProperties {
                 remark);
     }
 
-    public String getCannotDeliverPath(String reason){
+    public String getCannotDeliverUrl(String reason){
         return String.format(
                 "%s/%s%s",
                 getServerPath(),
@@ -100,5 +100,12 @@ public class BackEndProperties {
                 getServerPath(),
                 backEndProperties.getProperty("deliver")
         );
+    }
+
+    public String getAddLocationUpdateUrl() {
+        return String.format(
+                "%s/%s",
+                getServerPath(),
+                backEndProperties.getProperty("addLocationUpdate"));
     }
 }

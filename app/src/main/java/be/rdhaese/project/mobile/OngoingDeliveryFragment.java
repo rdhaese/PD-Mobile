@@ -1,5 +1,6 @@
 package be.rdhaese.project.mobile;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -7,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,6 +33,7 @@ import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.decorator.ParcelablePacketDTODecorator;
 import be.rdhaese.project.mobile.dialog.DialogTool;
 import be.rdhaese.project.mobile.dialog.listener.DoNothingListener;
+import be.rdhaese.project.mobile.location.LocationUpdateService;
 import be.rdhaese.project.mobile.task.AddRemarkTask;
 import be.rdhaese.project.mobile.task.CannotDeliverTask;
 import be.rdhaese.project.mobile.task.DeliverTask;
@@ -78,6 +81,8 @@ public class OngoingDeliveryFragment extends RoboFragment {
     private ArrayList<ParcelablePacketDTODecorator> packets;
     @InjectExtra(value = "originalAmountOfPackets", optional = true)
     private Integer originalAmountOfPackets;
+    @InjectExtra(value = "navigationStarted", optional = true)
+    private Boolean navigationStarted = false;
 
     private PacketDTO currentPacket;
 
@@ -103,6 +108,38 @@ public class OngoingDeliveryFragment extends RoboFragment {
         init();
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode,resultCode,data);
+        if (requestCode == 0) {
+            if (resultCode == Activity.RESULT_OK) {
+                //This runs after scanning for an id
+                //Getting scannedId from result
+                String scannedId = data.getStringExtra("SCAN_RESULT");
+
+                if (scannedId.equals(currentPacket.getPacketId())) {
+                    //Let back end send its mails and remove the packet from the system
+                    try {
+                        new DeliverTask().execute(roundId, currentPacket).get();
+                    } catch (InterruptedException e) {
+                        //TODO handle exception
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        //TODO handle exception
+                        e.printStackTrace();
+                    }
+                    //do nextPacket logic
+                    nextPacket();
+                } else {
+                    //No success:
+                    //Show toast:
+                    String toastText = String.format("Scanned code did not match packet id %s", currentPacket.getPacketId());
+                    toastTool.createToast(getActivity(), toastText).show();
+                }
+            }
+        }
+    }
+
     private void init() {
         //Nothing injected, means first packet -> set originalAmountOfPackets
         if (originalAmountOfPackets == null) {
@@ -119,17 +156,17 @@ public class OngoingDeliveryFragment extends RoboFragment {
                 originalAmountOfPackets - packets.size() + 1,
                 originalAmountOfPackets
         ));
-        txtPhoneNumber.setText(currentPacket.getClientPhone());
-        txtStreet.setText(currentPacket.getClientStreet());
-        txtNumber.setText(currentPacket.getClientNumber());
-        if (currentPacket.getClientMailbox() != null) {
+        txtPhoneNumber.setText(currentPacket.getDeliveryPhone());
+        txtStreet.setText(currentPacket.getDeliveryStreet());
+        txtNumber.setText(currentPacket.getDeliveryNumber());
+        if (currentPacket.getDeliveryMailbox() != null) {
             txtMailbox.setText(String.format(
-                    "Box: %s", currentPacket.getClientMailbox()));
+                    "Box: %s", currentPacket.getDeliveryMailbox()));
         } else {
             txtMailbox.setText("");
         }
-        txtPostalCode.setText(currentPacket.getClientPostalCode());
-        txtCity.setText(currentPacket.getClientCity());
+        txtPostalCode.setText(currentPacket.getDeliveryPostalCode());
+        txtCity.setText(currentPacket.getDeliveryCity());
 
         //Set buttons OnClickListener
         btnAddRemark.setOnClickListener(new View.OnClickListener() {
@@ -257,78 +294,84 @@ public class OngoingDeliveryFragment extends RoboFragment {
                 }
         );
 
-        btnDeliver.setOnClickListener(new View.OnClickListener()
+        btnDeliver.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (!switchConfirmVisually.isChecked()) {
+                            scan();
+                        } else {
+                            //Ask if sure:
+                            //Prepare dialog
+                            String title = "Confirm Visually";
+                            String message = "Are you sure packet IDs match? This is your responsibility!";
+                            DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //Let back end send its mails and remove the packet from the system
+                                    try {
+                                        new DeliverTask().execute(roundId, currentPacket).get();
+                                    } catch (InterruptedException e) {
+                                        //TODO handle exception
+                                        e.printStackTrace();
+                                    } catch (ExecutionException e) {
+                                        //TODO handle exception
+                                        e.printStackTrace();
+                                    }
+                                    //Do nextPacket logic
+                                    nextPacket();
+                                }
+                            };
+                            DialogInterface.OnClickListener noListener = new DoNothingListener();
 
-                                      {
-                                          @Override
-                                          public void onClick(View v) {
-                                              if (!switchConfirmVisually.isChecked()) {
-                                                  //TODO test this flow on cellphone......
-                                                  //Need to scan qr-code:
-                                                  //Prepare Intent for scanner app
-                                                  Intent intent = new Intent(ACTION_SCAN);
-                                                  intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
-                                                  //Start scanner app activity from parent activity (LoadingInActivity)
-                                                  getActivity().startActivityForResult(intent, 0);
-                                                  //Get the scanned id from LoadingInActivity
-                                                  String scannedId = ((OngoingDeliveryActivity) getActivity()).getPreviousScannedId();
-
-                                                  //TODO what if something goes wrong?
-                                                  if (scannedId.equals(currentPacket.getPacketId())) {
-                                                      //Let back end send its mails and remove the packet from the system
-                                                      try {
-                                                          new DeliverTask().execute(roundId, currentPacket).get();
-                                                      } catch (InterruptedException e) {
-                                                          //TODO handle exception
-                                                          e.printStackTrace();
-                                                      } catch (ExecutionException e) {
-                                                          //TODO handle exception
-                                                          e.printStackTrace();
-                                                      }
-                                                  }
-
-                                                  //do nextPacket logic
-                                                  nextPacket();
-                                              } else {
-                                                  //Ask if sure:
-                                                  //Prepare dialog
-                                                  String title = "Confirm Visually";
-                                                  String message = "Are you sure packet IDs match? This is your responsibility!";
-                                                  DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
-                                                      @Override
-                                                      public void onClick(DialogInterface dialog, int which) {
-                                                          //Let back end send its mails and remove the packet from the system
-                                                          try {
-                                                              new DeliverTask().execute(roundId, currentPacket).get();
-                                                          } catch (InterruptedException e) {
-                                                              //TODO handle exception
-                                                              e.printStackTrace();
-                                                          } catch (ExecutionException e) {
-                                                              //TODO handle exception
-                                                              e.printStackTrace();
-                                                          }
-                                                          //Do nextPacket logic
-                                                          nextPacket();
-                                                      }
-                                                  };
-                                                  DialogInterface.OnClickListener noListener = new DoNothingListener();
-
-                                                  //Show dialog
-                                                  dialogTool.yesNoDialog(
-                                                          getActivity(),
-                                                          title,
-                                                          message,
-                                                          yesListener,
-                                                          noListener
-                                                  ).show();
-                                              }
-                                          }
-                                      }
+                            //Show dialog
+                            dialogTool.yesNoDialog(
+                                    getActivity(),
+                                    title,
+                                    message,
+                                    yesListener,
+                                    noListener
+                            ).show();
+                        }
+                    }
+                }
 
         );
 
-        //TODO start navigation to currentPacket address
+        //TODO test this:
+
+        if (!navigationStarted) {
+            navigationStarted = true;
+            //Prepare navigation app
+            //Setup address query
+            String qry = String.format(
+                    "google.navigation:q=%s+%s,+%s+%s",
+                    currentPacket.getDeliveryStreet(),
+                    currentPacket.getDeliveryNumber(),
+                    currentPacket.getDeliveryPostalCode(),
+                    currentPacket.getDeliveryCity());
+            Uri gmmIntentUri = Uri.parse(qry);
+
+            //Show toast that navigation is going to start
+            String toastText = "Navigation is starting...";
+            toastTool.createToast(getActivity(), toastText).show();
+
+            //Create intent
+            final Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+            mapIntent.setPackage("com.google.android.apps.maps");
+
+            //Wait 3 seconds before starting navigation
+            // so the courier has the time to understand what is happening
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    //Start navigation
+                    startActivity(mapIntent);
+                }
+            }, 3000);
+        }
     }
+
 
     private void nextPacket() {
         packets.remove(currentPacket);
@@ -337,7 +380,13 @@ public class OngoingDeliveryFragment extends RoboFragment {
             //Last packet:
             //Remove round from backend
             try {
-                new EndRoundTask().execute(roundId).get();
+                Boolean roundEnded = new EndRoundTask().execute(roundId).get();
+
+                if (roundEnded){
+                    Intent intent = new Intent(getActivity(), LocationUpdateService.class);
+                    getActivity().stopService(intent);
+                }
+
             } catch (InterruptedException e) {
                 //TODO handle exception
                 e.printStackTrace();
@@ -346,12 +395,11 @@ public class OngoingDeliveryFragment extends RoboFragment {
                 e.printStackTrace();
             }
 
-            //TODO start navigation to PD address
-
             //Show HomeScreenActivity again with message
             Intent intent = new Intent(getActivity(), HomeScreenActivity.class);
             String message = "Round Finished!";
             intent.putExtra("message", message);
+            intent.putExtra("roundFinished", true);
             startActivity(intent);
         } else {
             //Show this activity for next packet
@@ -364,4 +412,26 @@ public class OngoingDeliveryFragment extends RoboFragment {
 
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("navigationStarted", navigationStarted);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            navigationStarted = savedInstanceState.getBoolean("navigationStarted");
+        }
+    }
+
+    private void scan() {
+        //Need to scan qr-code:
+        //Prepare Intent for scanner app
+        Intent intent = new Intent(ACTION_SCAN);
+        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+        //Start scanner app activity
+        startActivityForResult(intent, 0);
+    }
 }

@@ -2,6 +2,7 @@ package be.rdhaese.project.mobile.dialog.listener;
 
 import android.content.DialogInterface;
 
+import be.rdhaese.project.mobile.SearchingPacketsFragment;
 import be.rdhaese.project.mobile.adapter.SearchPacketsAdapter;
 import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
 
@@ -11,9 +12,9 @@ import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
 public class GoToNextStepNoListener implements DialogInterface.OnClickListener  {
 
     private SearchPacketsPacketDTO currentPacket;
-    private SearchPacketsAdapter.SearchPacketListItemHolder holder;
+    private SearchingPacketsFragment.SearchPacketListItemHolder holder;
 
-    public GoToNextStepNoListener(SearchPacketsPacketDTO currentPacket, SearchPacketsAdapter.SearchPacketListItemHolder holder) {
+    public GoToNextStepNoListener(SearchPacketsPacketDTO currentPacket, SearchingPacketsFragment.SearchPacketListItemHolder holder) {
         this.currentPacket = currentPacket;
         this.holder = holder;
     }

@@ -46,6 +46,11 @@
             android:text="Scan"
             android:layout_gravity="right"
             android:id="@+id/btnScan"
-            android:background="@drawable/rounded_button"/>
+            android:background="@drawable/rounded_button"
+            android:textColor="#ffffff"
+            android:paddingLeft="25dp"
+            android:textAlignment="center"
+            android:paddingRight="25dp"
+            />
     </LinearLayout>
 </LinearLayout>

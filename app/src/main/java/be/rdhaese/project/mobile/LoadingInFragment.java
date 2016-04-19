@@ -1,5 +1,6 @@
 package be.rdhaese.project.mobile;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.decorator.ParcelablePacketDTODecorator;
 import be.rdhaese.project.mobile.dialog.DialogTool;
 import be.rdhaese.project.mobile.dialog.listener.DoNothingListener;
+import be.rdhaese.project.mobile.location.LocationUpdateService;
 import be.rdhaese.project.mobile.task.MarkAsLostTask;
 import be.rdhaese.project.mobile.task.StartRoundTask;
 import be.rdhaese.project.mobile.toast.ToastTool;
@@ -74,6 +76,31 @@ public class LoadingInFragment extends RoboFragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         init();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 0){
+            if (resultCode == Activity.RESULT_OK){
+                //This runs after scanning for an id
+                //Getting scannedId from result
+                String scannedId = data.getStringExtra("SCAN_RESULT");
+
+                if (scannedId.equals(currentPacket.getPacketId())) {
+                    //Success:
+                    String toastText = "Scan successful!";
+                    toastTool.createToast(getActivity(), toastText).show();
+                    //Do nextPacket logic
+                    nextPacket();
+                } else {
+                    //No success:
+                    //Show toast:
+                    String toastText = String.format("Scanned code did not match packet id %s", currentPacket.getPacketId());
+                    toastTool.createToast(getActivity(), toastText).show();
+                }
+            }
+        }
     }
 
     private void init() {
@@ -155,30 +182,12 @@ public class LoadingInFragment extends RoboFragment {
     }
 
     private void scan() {
-        //TODO test this flow on cellphone......
         //Need to scan qr-code:
         //Prepare Intent for scanner app
         Intent intent = new Intent(ACTION_SCAN);
         intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
-        //Start scanner app activity from parent activity (LoadingInActivity)
-        getActivity().startActivityForResult(intent, 0);
-        //Get the scanned id from LoadingInActivity
-        String scannedId = ((LoadingInActivity) getActivity()).getPreviousScannedId();
-
-        //TODO what if something goes wrong?
-        if (scannedId.equals(currentPacket.getPacketId())) {
-            //Success:
-            String toastText = "Scan successful!";
-            toastTool.createToast(getActivity(), toastText).show();
-            //Do nextPacket logic
-            nextPacket();
-        } else {
-            //No success:
-            //Show toast:
-            String toastText = String.format("Scanned code did not match packet id %s", currentPacket.getPacketId());
-            toastTool.createToast(getActivity(), toastText).show();
-        }
-
+        //Start scanner app activity
+        startActivityForResult(intent, 0);
     }
 
     private void confirmVisually() {
@@ -229,6 +238,12 @@ public class LoadingInFragment extends RoboFragment {
                     "Result of backend starting round [%s]: [%s]",
                     roundId, roundStarted);
             Log.d(getClass().getSimpleName(), message);
+
+            if (roundStarted){
+                Intent intent = new Intent(getActivity(), LocationUpdateService.class);
+                intent.putExtra("roundId", roundId);
+                getActivity().startService(intent);
+            }
         } catch (InterruptedException | ExecutionException e) {
             String message = String.format(
                     "Could not start round [%s]",
