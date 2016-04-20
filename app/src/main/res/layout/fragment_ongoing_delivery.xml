@@ -7,7 +7,8 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_gravity="center">
 
         <TextView
             android:layout_width="wrap_content"
@@ -15,9 +16,9 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Ongoing Delivery"
             android:id="@+id/txtTitle"
-            android:layout_alignParentTop="false"
+            android:layout_above="@+id/txtCurrentPacket"
             android:layout_centerHorizontal="true"
-            android:layout_above="@+id/txtCurrentPacket" />
+            android:layout_marginBottom="10dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -27,7 +28,8 @@
             android:id="@+id/txtCurrentPacket"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_above="@+id/txtAddress" />
+            android:layout_above="@+id/txtAddress"
+            android:layout_marginBottom="5dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -103,8 +105,7 @@
             android:text="City"
             android:id="@+id/txtCity"
             android:layout_below="@+id/txtMailbox"
-            android:layout_alignRight="@+id/txtMailbox"
-            android:layout_alignEnd="@+id/txtMailbox" />
+            android:layout_toRightOf="@+id/txtPostalCode" />
 
         <Button
             android:layout_width="wrap_content"
@@ -148,7 +149,7 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentRight="true"
             android:layout_above="@+id/btnCannotDeliver"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="10dp"
             android:layout_marginBottom="5dp"
             android:textColor="#ffffff" />
 
@@ -170,7 +171,8 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="1 of 6"
             android:id="@+id/txtCurrentPacketCount"
-            android:layout_above="@+id/txtContact"
+            android:layout_alignBottom="@+id/txtTitle"
+            android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
 
         <TextView
@@ -187,11 +189,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="phoneNumber"
+            android:text="000/000000"
             android:id="@+id/txtPhoneNumber"
-            android:layout_alignTop="@+id/txtStreet"
-            android:layout_alignRight="@+id/txtContact"
-            android:layout_alignEnd="@+id/txtContact" />
+            android:layout_alignRight="@+id/txtCurrentPacketCount"
+            android:layout_alignEnd="@+id/txtCurrentPacketCount"
+            android:layout_below="@+id/txtContact" />
+
 
     </RelativeLayout>
+
+
 </FrameLayout>

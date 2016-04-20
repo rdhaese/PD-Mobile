@@ -38,64 +38,54 @@ public class DeliveryRoundServiceProxyRestWebService implements DeliveryRoundWeb
     //@Override
     public Long newRound(int amountOfPackets) {
         return restTemplate.getForObject(
-                backEndProperties.getNewRoundUrl(amountOfPackets),
-                Long.class);
+                backEndProperties.getNewRoundUrl(),
+                Long.class, amountOfPackets);
     }
 
     //@Override
     public List<PacketDTO> getPackets(Long roundId) {
         return Arrays.asList(
                 restTemplate.getForEntity(
-                        backEndProperties.getPacketsUrl(roundId),
-                        PacketDTO[].class)
+                        backEndProperties.getPacketsUrl(),
+                        PacketDTO[].class, roundId)
                         .getBody());
     }
 
     public Boolean markAsLost(Long roundId, PacketDTO packetDTO) {
-        Map<String, Long> vars = new HashMap<String, Long>();
-        vars.put("roundId", roundId);
-        return restTemplate.postForObject(backEndProperties.getMarkAsLostUrl(), packetDTO, Boolean.class, vars);
+        return restTemplate.postForObject(backEndProperties.getMarkAsLostUrl(), packetDTO, Boolean.class, roundId);
     }
 
     // @Override
     public Boolean deliver(Long roundId, PacketDTO packetDTO) {
-        Map<String, Long> vars = new HashMap<String, Long>();
-        vars.put("roundId", roundId);
-        return restTemplate.postForObject(backEndProperties.getDeliverUrl(), packetDTO, Boolean.class, vars);
+        return restTemplate.postForObject(backEndProperties.getDeliverUrl(), packetDTO, Boolean.class, roundId);
     }
 
     // @Override
     public Boolean cannotDeliver(Long roundId, PacketDTO packetDTO, String reason) {
-        Map<String, Long> vars = new HashMap<String, Long>();
-        vars.put("roundId", roundId);
-        return restTemplate.postForObject(backEndProperties.getCannotDeliverUrl(reason), packetDTO, Boolean.class, vars);
+        return restTemplate.postForObject(backEndProperties.getCannotDeliverUrl(), packetDTO, Boolean.class, roundId, reason);
     }
 
     // @Override
     public Boolean addRemark(Long roundId, String remark) {
-        Map<String, Long> vars = new HashMap<String, Long>();
-        vars.put("roundId", roundId);
-        return restTemplate.getForObject(backEndProperties.getAddRemarkUrl(remark), Boolean.class, vars);
+        return restTemplate.getForObject(backEndProperties.getAddRemarkUrl(), Boolean.class, roundId, remark);
     }
 
     // @Override
     public Boolean addLocationUpdate(Long roundId, LongLatDTO longLatDTO) {
-        Map<String, Long> vars = new HashMap<String, Long>();
-        vars.put("roundId", roundId);
-        return restTemplate.postForObject(backEndProperties.getAddLocationUpdateUrl(), longLatDTO, Boolean.class, vars);
+        return restTemplate.postForObject(backEndProperties.getAddLocationUpdateUrl(), longLatDTO, Boolean.class, roundId);
     }
 
     //@Override
     public Boolean endRound(Long roundId) {
         return restTemplate.getForObject(
-                backEndProperties.getEndRoundUrl(roundId),
-                Boolean.class);
+                backEndProperties.getEndRoundUrl(),
+                Boolean.class, roundId);
     }
 
     @Override
     public Boolean startRound(Long roundId) {
        return restTemplate.getForObject(
-               backEndProperties.getStartRoundUrl(roundId),
-               Boolean.class);
+               backEndProperties.getStartRoundUrl(),
+               Boolean.class, roundId);
     }
 }

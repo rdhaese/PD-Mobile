@@ -38,74 +38,47 @@ public class BackEndProperties {
         return String.format("http://%s:%s", getIp(), getPort());
     }
 
-    public String getNewRoundUrl(int amountOfPackets) {
+    public String getWithServerPath(String propertyKey){
         return String.format(
-                "%s/%s%s",
+                "%s/%s",
                 getServerPath(),
-                backEndProperties.getProperty("newRound"),
-                amountOfPackets);
+                backEndProperties.getProperty(propertyKey)
+        );
     }
 
-    public String getPacketsUrl(Long roundId) {
-        return String.format(
-                "%s/%s%s",
-                getServerPath(),
-                backEndProperties.getProperty("getPackets"),
-                roundId);
+    public String getNewRoundUrl() {
+        return getWithServerPath("newRound");
+    }
+
+    public String getPacketsUrl() {
+        return getWithServerPath("getPackets");
     }
 
     public String getMarkAsLostUrl() {
-        return String.format(
-                "%s/%s",
-                getServerPath(),
-                backEndProperties.getProperty("markAsLost"));
+        return getWithServerPath("markAsLost");
     }
 
-    public String getEndRoundUrl(Long roundId) {
-        return String.format(
-                "%s/%s%s",
-                getServerPath(),
-                backEndProperties.getProperty("endRound"),
-                roundId);
+    public String getEndRoundUrl() {
+        return getWithServerPath("endRound");
     }
 
-    public String getStartRoundUrl(Long roundId) {
-        return String.format(
-                "%s/%s%s",
-                getServerPath(),
-                backEndProperties.getProperty("startRound"),
-                roundId);
+    public String getStartRoundUrl() {
+        return getWithServerPath("startRound");
     }
 
-    public String getAddRemarkUrl(String remark) {
-        return String.format(
-                "%s/%s%s",
-                getServerPath(),
-                backEndProperties.getProperty("addRemark"),
-                remark);
+    public String getAddRemarkUrl() {
+        return getWithServerPath("addRemark");
     }
 
-    public String getCannotDeliverUrl(String reason){
-        return String.format(
-                "%s/%s%s",
-                getServerPath(),
-                backEndProperties.getProperty("cannotDeliver"),
-                reason
-        );
+    public String getCannotDeliverUrl(){
+        return getWithServerPath("cannotDeliver");
     }
 
     public String getDeliverUrl(){
-        return String.format(
-                "%s/%s",
-                getServerPath(),
-                backEndProperties.getProperty("deliver")
-        );
+        return getWithServerPath("deliver");
     }
 
     public String getAddLocationUpdateUrl() {
-        return String.format(
-                "%s/%s",
-                getServerPath(),
-                backEndProperties.getProperty("addLocationUpdate"));
+        return getWithServerPath("addLocationUpdate");
     }
 }
