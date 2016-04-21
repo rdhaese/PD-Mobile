@@ -1,12 +1,9 @@
 package be.rdhaese.project.mobile.task;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.AsyncTask;
 
-import be.rdhaese.packetdelivery.back_end.application.web_service.interfaces.DeliveryRoundWebService;
+import be.rdhaese.packetdelivery.back_end.web_service.interfaces.DeliveryRoundWebService;
 import be.rdhaese.project.mobile.context.ApplicationContext;
-import be.rdhaese.project.mobile.location.LocationUpdateService;
 
 /**
  * Created by RDEAX37 on 8/04/2016.

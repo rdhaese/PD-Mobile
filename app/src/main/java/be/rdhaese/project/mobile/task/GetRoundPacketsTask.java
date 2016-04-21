@@ -2,10 +2,9 @@ package be.rdhaese.project.mobile.task;
 
 import android.os.AsyncTask;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import be.rdhaese.packetdelivery.back_end.application.web_service.interfaces.DeliveryRoundWebService;
+import be.rdhaese.packetdelivery.back_end.web_service.interfaces.DeliveryRoundWebService;
 import be.rdhaese.packetdelivery.dto.PacketDTO;
 import be.rdhaese.project.mobile.context.ApplicationContext;
 

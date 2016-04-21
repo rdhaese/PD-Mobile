@@ -3,7 +3,6 @@ package be.rdhaese.project.mobile.dialog.listener;
 import android.content.DialogInterface;
 
 import be.rdhaese.project.mobile.SearchingPacketsFragment;
-import be.rdhaese.project.mobile.adapter.SearchPacketsAdapter;
 import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
 
 /**

@@ -19,8 +19,6 @@ import java.util.concurrent.ExecutionException;
 
 import be.rdhaese.packetdelivery.dto.LongLatDTO;
 import be.rdhaese.project.mobile.task.AddLocationUpdateTask;
-import roboguice.inject.InjectExtra;
-import roboguice.service.RoboService;
 
 /**
  * Created by RDEAX37 on 10/04/2016.

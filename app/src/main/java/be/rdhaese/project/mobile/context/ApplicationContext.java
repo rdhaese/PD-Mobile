@@ -1,7 +1,5 @@
 package be.rdhaese.project.mobile.context;
 
-import android.util.Log;
-
 import java.util.HashMap;
 import java.util.Map;
 

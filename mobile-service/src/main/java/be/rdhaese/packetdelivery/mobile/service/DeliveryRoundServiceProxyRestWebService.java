@@ -6,15 +6,14 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-//import be.rdhaese.packetdelivery.back_end.application.web_service.interfaces.DeliveryRoundWebService;
-import be.rdhaese.packetdelivery.back_end.application.web_service.interfaces.DeliveryRoundWebService;
+import be.rdhaese.packetdelivery.back_end.web_service.interfaces.DeliveryRoundWebService;
 import be.rdhaese.packetdelivery.dto.LongLatDTO;
 import be.rdhaese.packetdelivery.dto.PacketDTO;
 import be.rdhaese.packetdelivery.mobile.service.properties.BackEndProperties;
+
+//import be.rdhaese.packetdelivery.back_end.application.web_service.interfaces.DeliveryRoundWebService;
 
 public class DeliveryRoundServiceProxyRestWebService implements DeliveryRoundWebService {
 

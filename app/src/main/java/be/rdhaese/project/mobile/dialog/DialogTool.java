@@ -1,24 +1,11 @@
 package be.rdhaese.project.mobile.dialog;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.drawable.GradientDrawable;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.EditText;
-import android.widget.TextView;
-
-import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
-
-import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
-import be.rdhaese.project.mobile.dialog.listener.DoNothingListener;
-import be.rdhaese.project.mobile.task.MarkAsLostTask;
 
 /**
  * Created by RDEAX37 on 8/04/2016.

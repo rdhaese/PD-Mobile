@@ -14,21 +14,17 @@ import android.widget.TextView;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import be.rdhaese.packetdelivery.back_end.application.web_service.interfaces.DeliveryRoundWebService;
+import be.rdhaese.packetdelivery.back_end.web_service.interfaces.DeliveryRoundWebService;
 import be.rdhaese.packetdelivery.dto.PacketDTO;
-import be.rdhaese.project.mobile.activity.SearchingPacketsActivity;
 import be.rdhaese.project.mobile.adapter.SearchPacketsAdapter;
 import be.rdhaese.project.mobile.context.ApplicationContext;
-import be.rdhaese.project.mobile.decorator.ParcelablePacketDTODecorator;
 import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
 import be.rdhaese.project.mobile.dialog.DialogTool;
 import be.rdhaese.project.mobile.dialog.listener.GoToNextStepNoListener;
 import be.rdhaese.project.mobile.dialog.listener.GoToNextStepYesListener;
-import be.rdhaese.project.mobile.task.DeliverTask;
 import be.rdhaese.project.mobile.task.GetRoundPacketsTask;
 import be.rdhaese.project.mobile.toast.ToastTool;
 import roboguice.fragment.RoboFragment;

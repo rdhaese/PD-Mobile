@@ -1,14 +1,8 @@
 package be.rdhaese.packetdelivery.mobile.service.properties;
 
-import org.codehaus.jackson.map.deser.SettableBeanProperty;
-
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.Properties;
-import java.util.zip.InflaterInputStream;
 
 /**
  * Created by RDEAX37 on 6/04/2016.
