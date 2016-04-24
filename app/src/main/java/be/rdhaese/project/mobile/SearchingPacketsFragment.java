@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutionException;
 import be.rdhaese.packetdelivery.back_end.web_service.interfaces.DeliveryRoundWebService;
 import be.rdhaese.packetdelivery.dto.PacketDTO;
 import be.rdhaese.project.mobile.adapter.SearchPacketsAdapter;
+import be.rdhaese.project.mobile.constants.Constants;
 import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
 import be.rdhaese.project.mobile.dialog.DialogTool;
@@ -33,8 +34,6 @@ import roboguice.inject.InjectView;
 
 
 public class SearchingPacketsFragment extends RoboFragment {
-
-    private static final String ACTION_SCAN = "com.google.zxing.client.android.SCAN";
 
     private ArrayList<SearchPacketsPacketDTO> searchPacketsPacketDTOs;
 
@@ -144,8 +143,9 @@ public class SearchingPacketsFragment extends RoboFragment {
                         //TODO test this flow on cellphone......
                         //Need to scan qr-code:
                         //Prepare Intent for scanner app
-                        Intent intent = new Intent(ACTION_SCAN);
-                        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+                        Intent intent = new Intent(Constants.ACTION_SCAN);
+                        intent.setPackage(Constants.PACKAGE_SCAN);
+                        intent.putExtra(Constants.EXTRA_SCAN_MODE, Constants.EXTRA_QR_CODE_MODE);
                         //Start scanner app activity
                         startActivityForResult(intent, 0);
                     } else {

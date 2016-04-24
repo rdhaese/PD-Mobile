@@ -25,8 +25,8 @@ import be.rdhaese.project.mobile.task.AddLocationUpdateTask;
  */
 public class LocationUpdateService extends Service {
 
-    private static final Long INTERVAL = new Long(5 * 60 * 1000); //5 minutes in milliseconds
-    //private static final Long INTERVAL = 1000L;
+   // private static final Long INTERVAL = new Long(5 * 60 * 1000); //5 minutes in milliseconds
+    private static final Long INTERVAL = 5000L; //Update every 5 seconds, for test purposes
     private Long roundId;
 
     private LocationManager locMan;
@@ -51,8 +51,11 @@ public class LocationUpdateService extends Service {
 
             if (locationChanged)
                 if (ActivityCompat.checkSelfPermission(LocationUpdateService.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(LocationUpdateService.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    //Do nothing, permission is checked in HomeScreenActivity
-                    //TODO permission checks in HomeScreenActivity
+                    //TODO
+                    //SDK23 related check
+                    //Figure out a way to force the user to pick yes
+                    //Will probably give troubles
+                    //If no, the application should maybe suspend and the round terminated...
                 }
             locMan.removeUpdates(gpsListener);
 
@@ -153,8 +156,11 @@ public class LocationUpdateService extends Service {
         try {
             if (locMan.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    //Do nothing, permission is checked in HomeScreenActivity
-                    //TODO permission checks in HomeScreenActivity
+                    //TODO
+                    //SDK23 related check
+                    //Figure out a way to force the user to pick yes
+                    //Will probably give troubles
+                    //If no, the application should maybe suspend and the round terminated...
                 }
                 locMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, INTERVAL, 1, gpsListener);// here you can set the 2nd argument time interval also that after how much time it will get the gps location
                 gpslocation = locMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -165,8 +171,7 @@ public class LocationUpdateService extends Service {
                 networkLocation = locMan.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             }
         } catch (IllegalArgumentException e) {
-            //Log.e(ErrorCode.ILLEGALARGUMENTERROR, e.toString());
-            Log.e("error", e.toString());
+            Log.e(getClass().getSimpleName(), e.toString());
         }
         if (gpslocation == null && networkLocation == null)
             return null;

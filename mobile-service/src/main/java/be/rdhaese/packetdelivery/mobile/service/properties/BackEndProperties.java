@@ -11,21 +11,30 @@ public class BackEndProperties {
 
     private static final String PROPERTY_FILE_NAME = "back-end.properties";
 
-    private Properties backEndProperties = new Properties();
+    private static BackEndProperties instance;
 
-    public BackEndProperties() throws IOException {
+    private Properties properties = new Properties();
+
+    private BackEndProperties() throws IOException {
         try (InputStream propertiesAsInputStream =
                      getClass().getClassLoader().getResourceAsStream(PROPERTY_FILE_NAME)) {
-            backEndProperties.load(propertiesAsInputStream);
+            properties.load(propertiesAsInputStream);
         }
     }
 
+    public static BackEndProperties getInstance() throws IOException {
+        if (instance == null){
+            instance = new BackEndProperties();
+        }
+        return instance;
+    }
+
     public String getIp() {
-        return backEndProperties.getProperty("ip");
+        return properties.getProperty("ip");
     }
 
     public String getPort() {
-        return backEndProperties.getProperty("port");
+        return properties.getProperty("port");
     }
 
     public String getServerPath() {
@@ -36,7 +45,7 @@ public class BackEndProperties {
         return String.format(
                 "%s/%s",
                 getServerPath(),
-                backEndProperties.getProperty(propertyKey)
+                properties.getProperty(propertyKey)
         );
     }
 
@@ -75,4 +84,19 @@ public class BackEndProperties {
     public String getAddLocationUpdateUrl() {
         return getWithServerPath("addLocationUpdate");
     }
+
+    public String getStateNewIdUrl() { return getWithServerPath("state.new"); }
+
+    public String getStateForAppIdUrl() {return getWithServerPath("state.get");}
+
+    public String getStateRoundStartedUrl() {return getWithServerPath("state.roundStarted");}
+
+    public String getStateLoadingInUrl() {return getWithServerPath("state.loadingIn");}
+
+    public String getStateNextPacketUrl() {return getWithServerPath("state.nextPacket");}
+
+    public String getStateOngoingDeliveryUrl() {return getWithServerPath("state.ongoingDelivery");}
+
+    public String getStateRoundEndedUrl() {return getWithServerPath("state.roundEnded");}
+
 }

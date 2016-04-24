@@ -17,13 +17,18 @@ import java.util.concurrent.ExecutionException;
 import be.rdhaese.packetdelivery.dto.PacketDTO;
 import be.rdhaese.project.mobile.activity.LoadingInActivity;
 import be.rdhaese.project.mobile.activity.OngoingDeliveryActivity;
+import be.rdhaese.project.mobile.constants.Constants;
 import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.decorator.ParcelablePacketDTODecorator;
+import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
 import be.rdhaese.project.mobile.dialog.DialogTool;
 import be.rdhaese.project.mobile.dialog.listener.DoNothingListener;
 import be.rdhaese.project.mobile.location.LocationUpdateService;
+import be.rdhaese.project.mobile.task.GetRoundPacketsTask;
 import be.rdhaese.project.mobile.task.MarkAsLostTask;
 import be.rdhaese.project.mobile.task.StartRoundTask;
+import be.rdhaese.project.mobile.task.UpdateStateNextPacketTask;
+import be.rdhaese.project.mobile.task.UpdateStateOngoingDeliveryTask;
 import be.rdhaese.project.mobile.toast.ToastTool;
 import roboguice.fragment.RoboFragment;
 import roboguice.inject.InjectExtra;
@@ -31,8 +36,6 @@ import roboguice.inject.InjectView;
 
 
 public class LoadingInFragment extends RoboFragment {
-
-    private static final String ACTION_SCAN = "com.google.zxing.client.android.SCAN";
 
     @InjectView(R.id.btnScan)
     private Button btnScan;
@@ -48,7 +51,7 @@ public class LoadingInFragment extends RoboFragment {
 
     @InjectExtra("roundId")
     private Long roundId;
-    @InjectExtra("packets")
+    @InjectExtra(value = "packets", optional = true)
     private ArrayList<ParcelablePacketDTODecorator> packets;
     @InjectExtra(value = "currentPacketIndex", optional = true)
     private Integer currentPacketIndex;
@@ -104,6 +107,18 @@ public class LoadingInFragment extends RoboFragment {
     }
 
     private void init() {
+        //No packets injected, means the app got shutdown and started during an ongoing round
+        if (packets == null){
+            //Get the packets from the back end
+            try {
+                packets = new ArrayList<>(ParcelablePacketDTODecorator.mapCollectionToDecorator(new GetRoundPacketsTask().execute(roundId).get()));
+            } catch (InterruptedException e) {
+                e.printStackTrace(); //TODO handle this
+            } catch (ExecutionException e) {
+                e.printStackTrace(); //TODO handle this
+            }
+        }
+
         //Nothing injected, means first packet -> index 0
         if (currentPacketIndex == null) {
             currentPacketIndex = 0;
@@ -184,8 +199,9 @@ public class LoadingInFragment extends RoboFragment {
     private void scan() {
         //Need to scan qr-code:
         //Prepare Intent for scanner app
-        Intent intent = new Intent(ACTION_SCAN);
-        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+        Intent intent = new Intent(Constants.ACTION_SCAN);
+        intent.setPackage(Constants.PACKAGE_SCAN);
+        intent.putExtra(Constants.EXTRA_SCAN_MODE, Constants.EXTRA_QR_CODE_MODE);
         //Start scanner app activity
         startActivityForResult(intent, 0);
     }
@@ -221,6 +237,7 @@ public class LoadingInFragment extends RoboFragment {
                     yesListener
             ).show();
         } else {
+            new UpdateStateNextPacketTask().execute(roundId);
             //Start this activity again, the currentPacketIndex was incremented,
             //so the next packet will be shown.
             Intent intent = new Intent(this.getActivity(), LoadingInActivity.class);
@@ -240,6 +257,7 @@ public class LoadingInFragment extends RoboFragment {
             Log.d(getClass().getSimpleName(), message);
 
             if (roundStarted){
+                new UpdateStateOngoingDeliveryTask().execute(roundId);
                 Intent intent = new Intent(getActivity(), LocationUpdateService.class);
                 intent.putExtra("roundId", roundId);
                 getActivity().startService(intent);
@@ -264,6 +282,7 @@ public class LoadingInFragment extends RoboFragment {
             Boolean removed = new MarkAsLostTask().execute(roundId, currentPacket).get();
             if (removed) {
                 packets.remove(currentPacketIndex);
+                new UpdateStateNextPacketTask().execute(roundId);
             }
             String message = String.format(
                     "Result of backend trying to mark packet [%s] for round [%s] as lost: [%s]",

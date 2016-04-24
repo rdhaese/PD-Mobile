@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 import be.rdhaese.packetdelivery.dto.PacketDTO;
 import be.rdhaese.project.mobile.activity.HomeScreenActivity;
 import be.rdhaese.project.mobile.activity.OngoingDeliveryActivity;
+import be.rdhaese.project.mobile.constants.Constants;
 import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.decorator.ParcelablePacketDTODecorator;
 import be.rdhaese.project.mobile.dialog.DialogTool;
@@ -30,6 +31,8 @@ import be.rdhaese.project.mobile.task.AddRemarkTask;
 import be.rdhaese.project.mobile.task.CannotDeliverTask;
 import be.rdhaese.project.mobile.task.DeliverTask;
 import be.rdhaese.project.mobile.task.EndRoundTask;
+import be.rdhaese.project.mobile.task.GetRoundPacketsTask;
+import be.rdhaese.project.mobile.task.UpdateStateRoundEndedTask;
 import be.rdhaese.project.mobile.toast.ToastTool;
 import roboguice.fragment.RoboFragment;
 import roboguice.inject.InjectExtra;
@@ -37,8 +40,6 @@ import roboguice.inject.InjectView;
 
 
 public class OngoingDeliveryFragment extends RoboFragment {
-
-    private static final String ACTION_SCAN = "com.google.zxing.client.android.SCAN";
 
     @InjectView(R.id.txtPacketId)
     private TextView txtPacketId;
@@ -69,7 +70,7 @@ public class OngoingDeliveryFragment extends RoboFragment {
 
     @InjectExtra("roundId")
     private Long roundId;
-    @InjectExtra("packets")
+    @InjectExtra(value = "packets", optional = true)
     private ArrayList<ParcelablePacketDTODecorator> packets;
     @InjectExtra(value = "originalAmountOfPackets", optional = true)
     private Integer originalAmountOfPackets;
@@ -133,6 +134,18 @@ public class OngoingDeliveryFragment extends RoboFragment {
     }
 
     private void init() {
+        //No packets injected, means the app got shutdown and started during an ongoing round
+        if (packets == null){
+            //Get the packets from the back end
+            try {
+                packets = new ArrayList<>(ParcelablePacketDTODecorator.mapCollectionToDecorator(new GetRoundPacketsTask().execute(roundId).get()));
+            } catch (InterruptedException e) {
+                e.printStackTrace(); //TODO handle this
+            } catch (ExecutionException e) {
+                e.printStackTrace(); //TODO handle this
+            }
+        }
+
         //Nothing injected, means first packet -> set originalAmountOfPackets
         if (originalAmountOfPackets == null) {
             originalAmountOfPackets = packets.size();
@@ -330,8 +343,6 @@ public class OngoingDeliveryFragment extends RoboFragment {
 
         );
 
-        //TODO test this:
-
         if (!navigationStarted) {
             navigationStarted = true;
             //Prepare navigation app
@@ -350,7 +361,7 @@ public class OngoingDeliveryFragment extends RoboFragment {
 
             //Create intent
             final Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-            mapIntent.setPackage("com.google.android.apps.maps");
+            mapIntent.setPackage(Constants.PACKAGE_MAPS);
 
             //Wait 3 seconds before starting navigation
             // so the courier has the time to understand what is happening
@@ -388,6 +399,7 @@ public class OngoingDeliveryFragment extends RoboFragment {
             }
 
             //Show HomeScreenActivity again with message
+            new UpdateStateRoundEndedTask().execute(roundId);
             Intent intent = new Intent(getActivity(), HomeScreenActivity.class);
             String message = "Round Finished!";
             intent.putExtra("message", message);
@@ -421,8 +433,9 @@ public class OngoingDeliveryFragment extends RoboFragment {
     private void scan() {
         //Need to scan qr-code:
         //Prepare Intent for scanner app
-        Intent intent = new Intent(ACTION_SCAN);
-        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+        Intent intent = new Intent(Constants.ACTION_SCAN);
+        intent.setPackage(Constants.PACKAGE_SCAN);
+        intent.putExtra(Constants.EXTRA_SCAN_MODE, Constants.EXTRA_QR_CODE_MODE);
         //Start scanner app activity
         startActivityForResult(intent, 0);
     }

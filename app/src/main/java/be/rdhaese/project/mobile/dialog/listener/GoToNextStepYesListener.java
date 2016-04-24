@@ -14,6 +14,7 @@ import be.rdhaese.project.mobile.activity.LoadingInActivity;
 import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
 import be.rdhaese.project.mobile.task.EndRoundTask;
 import be.rdhaese.project.mobile.task.MarkAsLostTask;
+import be.rdhaese.project.mobile.task.UpdateStateLoadingInTask;
 
 /**
  * Created by RDEAX37 on 8/04/2016.
@@ -76,6 +77,7 @@ public class GoToNextStepYesListener implements DialogInterface.OnClickListener 
             Intent intent = new Intent(activityContext, HomeScreenActivity.class);
             activityContext.startActivity(intent);
         } else { //The round can go on to the next screen
+            new UpdateStateLoadingInTask().execute(roundId);
             //create intent with roundId and remaining packets
             Intent intent = new Intent(activityContext, LoadingInActivity.class);
             intent.putExtra("roundId", roundId);

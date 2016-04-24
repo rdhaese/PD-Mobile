@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import be.rdhaese.project.mobile.activity.NumberOfPacketsActivity;
+import be.rdhaese.project.mobile.constants.Constants;
 import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.toast.ToastTool;
 import roboguice.fragment.RoboFragment;
@@ -80,7 +81,7 @@ public class StartRoundFragment extends RoboFragment {
             Uri gmmIntentUri = Uri.parse(qry);
             //Create intent
             final Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-            mapIntent.setPackage("com.google.android.apps.maps");
+            mapIntent.setPackage(Constants.PACKAGE_MAPS);
 
             //Show toast that navigation is going to start
             String toastText = "Navigation is starting...";

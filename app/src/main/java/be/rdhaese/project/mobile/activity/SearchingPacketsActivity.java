@@ -5,5 +5,5 @@ import roboguice.activity.RoboFragmentActivity;
 import roboguice.inject.ContentView;
 
 @ContentView(R.layout.activity_searching_packets)
-public class SearchingPacketsActivity extends RoboFragmentActivity {
+public class SearchingPacketsActivity extends AbstractNoGoingBackActivity {
 }

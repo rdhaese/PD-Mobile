@@ -17,19 +17,18 @@ import java.util.concurrent.ExecutionException;
 
 import be.rdhaese.project.mobile.activity.HomeScreenActivity;
 import be.rdhaese.project.mobile.activity.SearchingPacketsActivity;
+import be.rdhaese.project.mobile.app_id.AppIdTool;
 import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.dialog.DialogTool;
 import be.rdhaese.project.mobile.dialog.listener.DoNothingListener;
 import be.rdhaese.project.mobile.task.GetNewRoundTask;
+import be.rdhaese.project.mobile.task.UpdateStateRoundStartedTask;
 import be.rdhaese.project.mobile.toast.ToastTool;
 import roboguice.fragment.RoboFragment;
 import roboguice.inject.InjectView;
 
 
 public class NumberOfPacketsFragment extends RoboFragment {
-
-    //TODO moet op dit scherm kunnen annuleren volgens use case
-    //TODO mss ook beter om te vragen of hij zeker is dat hij een ronde wil starten, want geen weg terug
 
     private static final int MY_PERMISSIONS_REQUEST = 1;
     private static final Long INVALID_ROUND = -1L;
@@ -41,11 +40,13 @@ public class NumberOfPacketsFragment extends RoboFragment {
 
     private DialogTool dialogTool;
     private ToastTool toastTool;
+    private AppIdTool appIdTool;
 
     {
         ApplicationContext context = ApplicationContext.getInstance();
         dialogTool = context.getBean("dialogTool");
         toastTool = context.getBean("toastTool");
+        appIdTool = context.getBean("appIdTool");
     }
 
     private void init() {
@@ -122,6 +123,7 @@ public class NumberOfPacketsFragment extends RoboFragment {
                 startActivity(intent);
             } else {
                 //A valid roundId is returned, we can go on to the next activity
+                new UpdateStateRoundStartedTask().execute(appIdTool.getAppId(this.getContext()), roundId);
                 Intent intent = new Intent(this.getActivity(), SearchingPacketsActivity.class);
                 intent.putExtra("roundId", roundId);
                 startActivity(intent);
@@ -158,28 +160,15 @@ public class NumberOfPacketsFragment extends RoboFragment {
     }
 
     private void askPermissionIfNecessaryAndStartRound(View view) {
-        // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(view.getContext(),
                 Manifest.permission.INTERNET)
                 != PackageManager.PERMISSION_GRANTED) {
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this.getActivity(),
-                    Manifest.permission.INTERNET)) {
-                // Show an expanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-                // no explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this.getActivity(),
-                        new String[]{Manifest.permission.INTERNET},
-                        MY_PERMISSIONS_REQUEST);
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
-            }
+            //TODO
+            //SDK23 related check
+            //Figure out a way to force the user to pick yes
+            //Will probably give troubles
+            //If no, the application should maybe suspend and the round terminated...
         } else {
-            //TODO What happens here???
             startRound();
         }
     }

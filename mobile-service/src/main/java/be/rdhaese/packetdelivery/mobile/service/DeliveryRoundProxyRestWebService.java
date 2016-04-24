@@ -15,14 +15,14 @@ import be.rdhaese.packetdelivery.mobile.service.properties.BackEndProperties;
 
 //import be.rdhaese.packetdelivery.back_end.application.web_service.interfaces.DeliveryRoundWebService;
 
-public class DeliveryRoundServiceProxyRestWebService implements DeliveryRoundWebService {
+public class DeliveryRoundProxyRestWebService implements DeliveryRoundWebService {
 
     private BackEndProperties backEndProperties;
     private RestTemplate restTemplate;
 
-    public DeliveryRoundServiceProxyRestWebService() {
+    public DeliveryRoundProxyRestWebService() {
         try {
-            backEndProperties = new BackEndProperties();
+            backEndProperties = BackEndProperties.getInstance();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

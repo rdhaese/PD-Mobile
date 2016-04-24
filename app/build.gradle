@@ -4,29 +4,26 @@ apply plugin: 'maven'
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
     }
-
     defaultConfig {
         applicationId "be.rdhaese.project.mobile"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
     }
     buildTypes {
-            debug {
-                debuggable true
-            }
+        debug {
+            debuggable true
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
     packagingOptions {
         pickFirst 'META-INF/notice.txt'
         pickFirst 'META-INF/license.txt'
@@ -36,9 +33,10 @@ android {
         //TODO find a way to include all files to do things the legal way
         //Fixes DuplicateFileException on build when 2 libraries have the same files
     }
-
-    lintOptions{
+    lintOptions {
         abortOnError false
+    }
+    productFlavors {
     }
 }
 

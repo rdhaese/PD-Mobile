@@ -29,12 +29,16 @@ public class DialogTool {
     }
 
     public AlertDialog yesDialog(Context context, String title, String message, DialogInterface.OnClickListener yesListener) {
+        return oneButtonDialog(context, title, message, "Yes", yesListener);
+    }
+
+    public AlertDialog oneButtonDialog(Context context, String title, String message, String buttonText, DialogInterface.OnClickListener listener) {
         //Create dialog
         AlertDialog dialog = new AlertDialog.Builder(context)
                 .setCancelable(false)
                 .setTitle(title)
                 .setMessage(message)
-                .setPositiveButton("Yes", yesListener)
+                .setPositiveButton(buttonText, listener)
                 .create();
 
         //Edit dialog location
