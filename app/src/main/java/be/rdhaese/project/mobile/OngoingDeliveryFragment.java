@@ -16,7 +16,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
+import java.util.List;
 
 import be.rdhaese.packetdelivery.dto.PacketDTO;
 import be.rdhaese.project.mobile.activity.HomeScreenActivity;
@@ -27,12 +27,14 @@ import be.rdhaese.project.mobile.decorator.ParcelablePacketDTODecorator;
 import be.rdhaese.project.mobile.dialog.DialogTool;
 import be.rdhaese.project.mobile.dialog.listener.DoNothingListener;
 import be.rdhaese.project.mobile.location.LocationUpdateService;
+import be.rdhaese.project.mobile.navigation.NavigationTool;
 import be.rdhaese.project.mobile.task.AddRemarkTask;
 import be.rdhaese.project.mobile.task.CannotDeliverTask;
 import be.rdhaese.project.mobile.task.DeliverTask;
 import be.rdhaese.project.mobile.task.EndRoundTask;
 import be.rdhaese.project.mobile.task.GetRoundPacketsTask;
 import be.rdhaese.project.mobile.task.UpdateStateRoundEndedTask;
+import be.rdhaese.project.mobile.task.result.AsyncTaskResult;
 import be.rdhaese.project.mobile.toast.ToastTool;
 import roboguice.fragment.RoboFragment;
 import roboguice.inject.InjectExtra;
@@ -68,24 +70,26 @@ public class OngoingDeliveryFragment extends RoboFragment {
     @InjectView(R.id.switchConfirmVisually)
     private Switch switchConfirmVisually;
 
-    @InjectExtra("roundId")
+    @InjectExtra(Constants.ROUND_ID_KEY)
     private Long roundId;
-    @InjectExtra(value = "packets", optional = true)
+    @InjectExtra(value = Constants.PACKETS_KEY, optional = true)
     private ArrayList<ParcelablePacketDTODecorator> packets;
-    @InjectExtra(value = "originalAmountOfPackets", optional = true)
+    @InjectExtra(value = Constants.ORIGINAL_AMOUNT_OF_PACKETS_KEY, optional = true)
     private Integer originalAmountOfPackets;
-    @InjectExtra(value = "navigationStarted", optional = true)
+    @InjectExtra(value = Constants.NAVIGATION_STARTED_KEY, optional = true)
     private Boolean navigationStarted = false;
 
     private PacketDTO currentPacket;
 
     private DialogTool dialogTool;
     private ToastTool toastTool;
+    private NavigationTool navigationTool;
 
     {
         ApplicationContext context = ApplicationContext.getInstance();
-        dialogTool = context.getBean("dialogTool");
-        toastTool = context.getBean("toastTool");
+        dialogTool = context.getBean(Constants.DIALOG_TOOL_KEY);
+        toastTool = context.getBean(Constants.TOAST_TOOL_KEY);
+        navigationTool = context.getBean(Constants.NAVIGATION_TOOL_KEY);
     }
 
     @Override
@@ -98,52 +102,54 @@ public class OngoingDeliveryFragment extends RoboFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        init();
+        try {
+            init();
+        } catch (Exception e) {
+            dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
+        }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode,resultCode,data);
-        if (requestCode == 0) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.SCAN_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 //This runs after scanning for an id
                 //Getting scannedId from result
-                String scannedId = data.getStringExtra("SCAN_RESULT");
+                String scannedId = data.getStringExtra(Constants.SCAN_RESULT_KEY);
 
                 if (scannedId.equals(currentPacket.getPacketId())) {
                     //Let back end send its mails and remove the packet from the system
                     try {
-                        new DeliverTask().execute(roundId, currentPacket).get();
-                    } catch (InterruptedException e) {
-                        //TODO handle exception
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        //TODO handle exception
-                        e.printStackTrace();
+                        AsyncTaskResult<Boolean> deliveryResult = new DeliverTask().execute(roundId, currentPacket).get();
+                        if (deliveryResult.hasException()) {
+                            throw deliveryResult.getException();
+                        }
+
+                        //do nextPacket logic
+                        nextPacket();
+                    } catch (Exception e) {
+                        dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
                     }
-                    //do nextPacket logic
-                    nextPacket();
                 } else {
                     //No success:
                     //Show toast:
-                    String toastText = String.format("Scanned code did not match packet id %s", currentPacket.getPacketId());
+                    String toastText = String.format("%s %s", getString(R.string.scanned_code_did_not_match), currentPacket.getPacketId());
                     toastTool.createToast(getActivity(), toastText).show();
                 }
             }
         }
     }
 
-    private void init() {
+    private void init() throws Exception {
         //No packets injected, means the app got shutdown and started during an ongoing round
-        if (packets == null){
+        if (packets == null) {
             //Get the packets from the back end
-            try {
-                packets = new ArrayList<>(ParcelablePacketDTODecorator.mapCollectionToDecorator(new GetRoundPacketsTask().execute(roundId).get()));
-            } catch (InterruptedException e) {
-                e.printStackTrace(); //TODO handle this
-            } catch (ExecutionException e) {
-                e.printStackTrace(); //TODO handle this
+            AsyncTaskResult<List<PacketDTO>> roundPacketsResult = new GetRoundPacketsTask().execute(roundId).get();
+            if (roundPacketsResult.hasException()) {
+                throw roundPacketsResult.getException();
             }
+            packets = new ArrayList<>(ParcelablePacketDTODecorator.mapCollectionToDecorator(roundPacketsResult.getResult()));
         }
 
         //Nothing injected, means first packet -> set originalAmountOfPackets
@@ -157,8 +163,9 @@ public class OngoingDeliveryFragment extends RoboFragment {
         //Initialize TextViews
         txtPacketId.setText(currentPacket.getPacketId());
         txtCurrentPacketCount.setText(String.format(
-                "%s of %s",
+                "%s %s %s",
                 originalAmountOfPackets - packets.size() + 1,
+                getString(R.string.of),
                 originalAmountOfPackets
         ));
         txtPhoneNumber.setText(currentPacket.getDeliveryPhone());
@@ -166,7 +173,9 @@ public class OngoingDeliveryFragment extends RoboFragment {
         txtNumber.setText(currentPacket.getDeliveryNumber());
         if (currentPacket.getDeliveryMailbox() != null) {
             txtMailbox.setText(String.format(
-                    "Box: %s", currentPacket.getDeliveryMailbox()));
+                    "%s %s",
+                    getString(R.string.box),
+                    currentPacket.getDeliveryMailbox()));
         } else {
             txtMailbox.setText("");
         }
@@ -178,8 +187,8 @@ public class OngoingDeliveryFragment extends RoboFragment {
             @Override
             public void onClick(View v) {
                 //Prepare dialog to ask for input
-                String title = "Add Remark";
-                String message = "Enter your remark and push 'Ok'.";
+                String title = getString(R.string.add_remark);
+                String message = getString(R.string.enter_your_remark);
                 final EditText inputComponent = new EditText(getActivity());
                 DialogInterface.OnClickListener okListener = new DialogInterface.OnClickListener() {
                     @Override
@@ -188,21 +197,24 @@ public class OngoingDeliveryFragment extends RoboFragment {
                         CharSequence remark = inputComponent.getText();
 
                         //Check if there was something entered
-                        if ((remark != null) && (remark.length() > 0)) {
+                        if ((remark == null) && (remark.length() <= Constants.REMARK_MIN_LENGTH)) {
+                            //Show toast that no remark was entered
+                            String toastText = getString(R.string.no_remark_entered);
+                            toastTool.createToast(getActivity(), toastText).show();
+                        } else if (remark.length() > Constants.REMARK_MAX_LENGTH) {
+                            //Show toast that remark is to long
+                            String toastText = getString(R.string.remark_to_long);
+                            toastTool.createToast(getActivity(), toastText).show();
+                        } else {
                             //Add remark to back end
                             try {
-                                new AddRemarkTask().execute(roundId, remark.toString()).get();
-                            } catch (InterruptedException e) {
-                                //TODO handle exception
-                                e.printStackTrace();
-                            } catch (ExecutionException e) {
-                                //TODO handle exception
-                                e.printStackTrace();
+                                AsyncTaskResult<Boolean> addRemarkResult = new AddRemarkTask().execute(roundId, remark.toString()).get();
+                                if (addRemarkResult.hasException()) {
+                                    throw addRemarkResult.getException();
+                                }
+                            } catch (Exception e) {
+                                dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
                             }
-                        } else {
-                            //Show toast that no remark was entered
-                            String toastText = "No remark entered";
-                            toastTool.createToast(getActivity(), toastText).show();
                         }
                         dialog.dismiss();
                     }
@@ -214,8 +226,8 @@ public class OngoingDeliveryFragment extends RoboFragment {
                         .setTitle(title)
                         .setMessage(message)
                         .setView(inputComponent)
-                        .setPositiveButton("Ok", okListener)
-                        .setNegativeButton("Cancel", new DoNothingListener())
+                        .setPositiveButton(R.string.ok, okListener)
+                        .setNegativeButton(R.string.cancel, new DoNothingListener())
                         .create();
                 dialogTool.setDialogLocation(getActivity(), dialog);
                 dialog.show();
@@ -230,8 +242,8 @@ public class OngoingDeliveryFragment extends RoboFragment {
                         //Ask for reason
                         final StringBuilder reason = new StringBuilder();
                         //Prepare dialog to ask for input
-                        String title = "Cannot Deliver";
-                        String message = "Enter a reason to mail to stakeholders and push 'Ok'.";
+                        String title = getString(R.string.cannot_deliver);
+                        String message = getString(R.string.enter_a_reason);
                         final EditText inputComponent = new EditText(getActivity());
                         DialogInterface.OnClickListener okListener = new DialogInterface.OnClickListener() {
                             @Override
@@ -243,16 +255,22 @@ public class OngoingDeliveryFragment extends RoboFragment {
                                 dialog.dismiss();
 
                                 //Check if there was something entered
-                                if (reason.length() == 0) {
+                                if (reason.length() == Constants.REASON_MIN_LENGTH) {
                                     //Show toast that no remark was entered
-                                    String toastText = "No reason entered";
+                                    String toastText = getString(R.string.no_reason_entered);
+                                    toastTool.createToast(getActivity(), toastText).show();
+                                } else if (reason.length() > Constants.REASON_MAX_LENGTH) {
+                                    //reason to long
+                                    String toastText = getString(R.string.reason_to_long);
                                     toastTool.createToast(getActivity(), toastText).show();
                                 } else {
                                     //Ask if really sure
-                                    String title = "Cannot Deliver";
+                                    String title = getString(R.string.cannot_deliver);
                                     String message = String.format(
-                                            "Are you sure packet %s cannot be delivered with reason %s?",
+                                            "%s %s %s %s?",
+                                            getString(R.string.cannot_deliver_part1),
                                             currentPacket.getPacketId(),
+                                            getString(R.string.cannot_deliver_part2),
                                             reason
                                     );
                                     DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
@@ -260,17 +278,17 @@ public class OngoingDeliveryFragment extends RoboFragment {
                                         public void onClick(DialogInterface dialog, int which) {
                                             //Let back end send its mails, do its priority logic and remove the packet from the round
                                             try {
-                                                new CannotDeliverTask().execute(roundId, currentPacket, reason).get();
-                                            } catch (InterruptedException e) {
-                                                //TODO handle exception
-                                                e.printStackTrace();
-                                            } catch (ExecutionException e) {
-                                                //TODO handle exception
-                                                e.printStackTrace();
+                                                AsyncTaskResult<Boolean> cannotDeliverResult = new CannotDeliverTask().execute(roundId, currentPacket, reason).get();
+                                                if (cannotDeliverResult.hasException()) {
+                                                    throw cannotDeliverResult.getException();
+                                                }
+
+                                                //Do nextPacket logic
+                                                nextPacket();
+                                            } catch (Exception e) {
+                                                dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
                                             }
 
-                                            //Do nextPacket logic
-                                            nextPacket();
                                         }
                                     };
                                     DialogInterface.OnClickListener noListener = new DoNothingListener();
@@ -290,8 +308,8 @@ public class OngoingDeliveryFragment extends RoboFragment {
                                 .setTitle(title)
                                 .setMessage(message)
                                 .setView(inputComponent)
-                                .setPositiveButton("Ok", okListener)
-                                .setNegativeButton("Cancel", new DoNothingListener())
+                                .setPositiveButton(R.string.ok, okListener)
+                                .setNegativeButton(R.string.cancel, new DoNothingListener())
                                 .create();
                         dialogTool.setDialogLocation(getActivity(), dialog);
                         dialog.show();
@@ -308,23 +326,23 @@ public class OngoingDeliveryFragment extends RoboFragment {
                         } else {
                             //Ask if sure:
                             //Prepare dialog
-                            String title = "Confirm Visually";
-                            String message = "Are you sure packet IDs match? This is your responsibility!";
+                            String title = getString(R.string.confirm_visually);
+                            String message = getString(R.string.sure_that_packet_ids_match);
                             DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     //Let back end send its mails and remove the packet from the system
                                     try {
-                                        new DeliverTask().execute(roundId, currentPacket).get();
-                                    } catch (InterruptedException e) {
-                                        //TODO handle exception
-                                        e.printStackTrace();
-                                    } catch (ExecutionException e) {
-                                        //TODO handle exception
-                                        e.printStackTrace();
+                                        AsyncTaskResult<Boolean> deliverResult = new DeliverTask().execute(roundId, currentPacket).get();
+                                        if (deliverResult.hasException()) {
+                                            throw deliverResult.getException();
+                                        }
+
+                                        //Do nextPacket logic
+                                        nextPacket();
+                                    } catch (Exception e) {
+                                        dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
                                     }
-                                    //Do nextPacket logic
-                                    nextPacket();
                                 }
                             };
                             DialogInterface.OnClickListener noListener = new DoNothingListener();
@@ -345,72 +363,53 @@ public class OngoingDeliveryFragment extends RoboFragment {
 
         if (!navigationStarted) {
             navigationStarted = true;
-            //Prepare navigation app
-            //Setup address query
-            String qry = String.format(
-                    "google.navigation:q=%s+%s,+%s+%s",
+            //Navigate to packet address
+            navigationTool.startNavigation(
+                    getActivity(),
                     currentPacket.getDeliveryStreet(),
                     currentPacket.getDeliveryNumber(),
                     currentPacket.getDeliveryPostalCode(),
-                    currentPacket.getDeliveryCity());
-            Uri gmmIntentUri = Uri.parse(qry);
-
-            //Show toast that navigation is going to start
-            String toastText = "Navigation is starting...";
-            toastTool.createToast(getActivity(), toastText).show();
-
-            //Create intent
-            final Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-            mapIntent.setPackage(Constants.PACKAGE_MAPS);
-
-            //Wait 3 seconds before starting navigation
-            // so the courier has the time to understand what is happening
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                public void run() {
-                    //Start navigation
-                    startActivity(mapIntent);
-                }
-            }, 3000);
+                    currentPacket.getDeliveryCity()
+            );
         }
     }
 
 
-    private void nextPacket() {
+    private void nextPacket() throws Exception {
         packets.remove(currentPacket);
         //check if packet is the last packet
         if (packets.size() == 0) {
             //Last packet:
             //Remove round from backend
-            try {
-                Boolean roundEnded = new EndRoundTask().execute(roundId).get();
 
-                if (roundEnded){
-                    Intent intent = new Intent(getActivity(), LocationUpdateService.class);
-                    getActivity().stopService(intent);
-                }
-
-            } catch (InterruptedException e) {
-                //TODO handle exception
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                //TODO handle exception
-                e.printStackTrace();
+            AsyncTaskResult<Boolean> roundEndedResult = new EndRoundTask().execute(roundId).get();
+            if (roundEndedResult.hasException()) {
+                throw roundEndedResult.getException();
             }
 
+            if (roundEndedResult.getResult()) {
+                Intent intent = new Intent(getActivity(), LocationUpdateService.class);
+                getActivity().stopService(intent);
+            }
+
+
             //Show HomeScreenActivity again with message
-            new UpdateStateRoundEndedTask().execute(roundId);
+            AsyncTaskResult<Boolean> updateStateRoundEndedResult = new UpdateStateRoundEndedTask().execute(roundId).get();
+            if (updateStateRoundEndedResult.hasException()) {
+                throw updateStateRoundEndedResult.getException();
+            }
+
             Intent intent = new Intent(getActivity(), HomeScreenActivity.class);
-            String message = "Round Finished!";
-            intent.putExtra("message", message);
-            intent.putExtra("roundFinished", true);
+            String message = getString(R.string.round_finished);
+            intent.putExtra(Constants.MESSAGE_KEY, message);
+            intent.putExtra(Constants.ROUND_FINISHED_KEY, true);
             startActivity(intent);
         } else {
             //Show this activity for next packet
             Intent intent = new Intent(getActivity(), OngoingDeliveryActivity.class);
-            intent.putExtra("roundId", roundId);
-            intent.putExtra("packets", packets);
-            intent.putExtra("originalAmountOfPackets", originalAmountOfPackets);
+            intent.putExtra(Constants.ROUND_ID_KEY, roundId);
+            intent.putExtra(Constants.PACKETS_KEY, packets);
+            intent.putExtra(Constants.ORIGINAL_AMOUNT_OF_PACKETS_KEY, originalAmountOfPackets);
             startActivity(intent);
         }
 
@@ -419,14 +418,14 @@ public class OngoingDeliveryFragment extends RoboFragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean("navigationStarted", navigationStarted);
+        outState.putBoolean(Constants.NAVIGATION_STARTED_KEY, navigationStarted);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
-            navigationStarted = savedInstanceState.getBoolean("navigationStarted");
+            navigationStarted = savedInstanceState.getBoolean(Constants.NAVIGATION_STARTED_KEY);
         }
     }
 
@@ -437,6 +436,6 @@ public class OngoingDeliveryFragment extends RoboFragment {
         intent.setPackage(Constants.PACKAGE_SCAN);
         intent.putExtra(Constants.EXTRA_SCAN_MODE, Constants.EXTRA_QR_CODE_MODE);
         //Start scanner app activity
-        startActivityForResult(intent, 0);
+        startActivityForResult(intent, Constants.SCAN_REQUEST_CODE);
     }
 }

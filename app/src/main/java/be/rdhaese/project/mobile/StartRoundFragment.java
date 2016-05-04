@@ -1,17 +1,20 @@
 package be.rdhaese.project.mobile;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import be.rdhaese.packetdelivery.dto.AddressDTO;
 import be.rdhaese.project.mobile.activity.NumberOfPacketsActivity;
 import be.rdhaese.project.mobile.constants.Constants;
 import be.rdhaese.project.mobile.context.ApplicationContext;
+import be.rdhaese.project.mobile.dialog.DialogTool;
+import be.rdhaese.project.mobile.navigation.NavigationTool;
+import be.rdhaese.project.mobile.task.GetCompanyAddressTask;
+import be.rdhaese.project.mobile.task.result.AsyncTaskResult;
 import be.rdhaese.project.mobile.toast.ToastTool;
 import roboguice.fragment.RoboFragment;
 import roboguice.inject.InjectExtra;
@@ -22,19 +25,23 @@ public class StartRoundFragment extends RoboFragment {
     @InjectView(R.id.btnStartNewRound)
     private Button btnStartNewRound;
 
-    @InjectExtra(value = "message", optional = true)
+    @InjectExtra(value = Constants.MESSAGE_KEY, optional = true)
     private String message;
 
-    @InjectExtra(value = "roundFinished", optional = true)
+    @InjectExtra(value = Constants.ROUND_FINISHED_KEY, optional = true)
     private Boolean roundFinished = false;
 
     private Boolean messageShown = false;
 
+    private DialogTool dialogTool;
     private ToastTool toastTool;
+    private NavigationTool navigationTool;
 
     {
         ApplicationContext context = ApplicationContext.getInstance();
-        toastTool = context.getBean("toastTool");
+        toastTool = context.getBean(Constants.TOAST_TOOL_KEY);
+        dialogTool = context.getBean(Constants.DIALOG_TOOL_KEY);
+        navigationTool = context.getBean(Constants.NAVIGATION_TOOL_KEY);
     }
 
     @Override
@@ -47,15 +54,18 @@ public class StartRoundFragment extends RoboFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        init();
+        try {
+            init();
+        } catch (Exception e){
+            dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
+        }
     }
 
-    private void init() {
+    private void init() throws Exception {
         if ((message != null) && (!messageShown)) {
             toastTool.createToast(getActivity(), message).show();
             messageShown =true;
         }
-
 
         btnStartNewRound.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,54 +75,40 @@ public class StartRoundFragment extends RoboFragment {
         });
 
         if (roundFinished) {
-//TODO test this:
-            //TODO address to pd that comes from back end
-            //set roundFinished to false so navigation only opens 1 time
+            //Set roundFinished to false so navigation only opens 1 time
             roundFinished = false;
 
-            //Prepare navigation app
-            //Setup address query
-            String qry = String.format(
-                    "google.navigation:q=%s+%s,+%s+%s",
-                    "DagmoedStraat",
-                    "77",
-                    "9500",
-                    "Schendelbeke");
-            Uri gmmIntentUri = Uri.parse(qry);
-            //Create intent
-            final Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-            mapIntent.setPackage(Constants.PACKAGE_MAPS);
+            //Get company address
+            AsyncTaskResult<AddressDTO> companyAddressResult = new GetCompanyAddressTask().execute().get();
+            if (companyAddressResult.hasException()){
+                throw companyAddressResult.getException();
+            }
+            AddressDTO companyAddress = companyAddressResult.getResult();
 
-            //Show toast that navigation is going to start
-            String toastText = "Navigation is starting...";
-            toastTool.createToast(getActivity(), toastText).show();
-
-            //Wait 3 seconds before starting navigation
-            // so the courier has the time to understand what is happening
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    //Start navigation
-                    startActivity(mapIntent);
-                }
-            }, 3000);
+            //Navigate to address
+            navigationTool.startNavigation(
+                    getActivity(),
+                    companyAddress.getStreet(),
+                    companyAddress.getNumber(),
+                    companyAddress.getPostalCode(),
+                    companyAddress.getCity()
+            );
         }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean("roundFinished", roundFinished);
-        outState.putBoolean("messageShown", messageShown);
+        outState.putBoolean(Constants.ROUND_FINISHED_KEY, roundFinished);
+        outState.putBoolean(Constants.MESSAGE_SHOWN_KEY, messageShown);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null){
-            roundFinished = savedInstanceState.getBoolean("roundFinished");
-            messageShown = savedInstanceState.getBoolean("messageShown");
+            roundFinished = savedInstanceState.getBoolean(Constants.ROUND_FINISHED_KEY);
+            messageShown = savedInstanceState.getBoolean(Constants.MESSAGE_SHOWN_KEY);
         }
     }
 

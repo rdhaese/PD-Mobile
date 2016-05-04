@@ -12,7 +12,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="No Round Started"
+            android:text="@string/no_round_started"
             android:id="@+id/textView"
             android:layout_above="@+id/btnStartNewRound"
             android:layout_centerHorizontal="true" />
@@ -20,7 +20,7 @@
         <Button
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="Start"
+            android:text="@string/start"
             android:id="@+id/btnStartNewRound"
             android:background="@drawable/rounded_button"
             android:layout_alignParentBottom="true"

@@ -1,5 +1,6 @@
 package be.rdhaese.project.mobile.activity;
 
+import be.rdhaese.project.mobile.constants.Constants;
 import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.dialog.DialogTool;
 import be.rdhaese.project.mobile.toast.ToastTool;
@@ -15,7 +16,7 @@ public abstract class AbstractActivity extends RoboFragmentActivity {
 
     {
         ApplicationContext context = ApplicationContext.getInstance();
-        dialogTool = context.getBean("dialogTool");
-        toastTool = context.getBean("toastTool");
+        dialogTool = context.getBean(Constants.DIALOG_TOOL_KEY);
+        toastTool = context.getBean(Constants.TOAST_TOOL_KEY);
     }
 }

@@ -1,5 +1,6 @@
 package be.rdhaese.project.mobile.activity;
 
+import be.rdhaese.project.mobile.R;
 import be.rdhaese.project.mobile.toast.ToastTool;
 
 /**
@@ -9,7 +10,7 @@ public abstract class AbstractNoGoingBackActivity extends AbstractActivity {
 
     @Override
     public void onBackPressed() {
-        String toastText = "You can't go back during a delivery round.";
+        String toastText = getString(R.string.cant_go_back_during_round);
         toastTool.createToast(this, toastText).show();
     }
 }

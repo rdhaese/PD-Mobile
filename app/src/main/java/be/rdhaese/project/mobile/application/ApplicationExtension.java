@@ -22,6 +22,7 @@ import be.rdhaese.project.mobile.app_id.AppIdTool;
 import be.rdhaese.project.mobile.constants.Constants;
 import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.dialog.DialogTool;
+import be.rdhaese.project.mobile.navigation.NavigationTool;
 import be.rdhaese.project.mobile.task.GetNewAppIdTask;
 import be.rdhaese.project.mobile.toast.ToastTool;
 
@@ -33,11 +34,12 @@ public class ApplicationExtension extends Application {
     @Override
     public void onCreate() {
         ApplicationContext context = ApplicationContext.getInstance();
-        context.putBean("roundService", new DeliveryRoundProxyRestWebService());
-        context.putBean("appService", new AppProxyRestWebService());
-        context.putBean("dialogTool", new DialogTool());
-        context.putBean("toastTool", new ToastTool());
-        context.putBean("appIdTool", new AppIdTool());
+        context.putBean(Constants.ROUND_SERVICE_KEY, new DeliveryRoundProxyRestWebService());
+        context.putBean(Constants.APP_SERVICE_KEY, new AppProxyRestWebService());
+        context.putBean(Constants.DIALOG_TOOL_KEY, new DialogTool());
+        context.putBean(Constants.TOAST_TOOL_KEY, new ToastTool());
+        context.putBean(Constants.APP_ID_TOOL_KEY, new AppIdTool());
+        context.putBean(Constants.NAVIGATION_TOOL_KEY, new NavigationTool());
 
         super.onCreate();
     }

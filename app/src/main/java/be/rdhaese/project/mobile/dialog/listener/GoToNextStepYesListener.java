@@ -9,12 +9,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import be.rdhaese.project.mobile.R;
 import be.rdhaese.project.mobile.activity.HomeScreenActivity;
 import be.rdhaese.project.mobile.activity.LoadingInActivity;
+import be.rdhaese.project.mobile.constants.Constants;
+import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
+import be.rdhaese.project.mobile.dialog.DialogTool;
 import be.rdhaese.project.mobile.task.EndRoundTask;
 import be.rdhaese.project.mobile.task.MarkAsLostTask;
 import be.rdhaese.project.mobile.task.UpdateStateLoadingInTask;
+import be.rdhaese.project.mobile.task.result.AsyncTaskResult;
+import be.rdhaese.project.mobile.toast.ToastTool;
 
 /**
  * Created by RDEAX37 on 8/04/2016.
@@ -24,6 +30,15 @@ public class GoToNextStepYesListener implements DialogInterface.OnClickListener 
     private Activity activityContext;
     private Long roundId;
     private List<SearchPacketsPacketDTO> packets;
+
+    private DialogTool dialogTool;
+    private ToastTool toastTool;
+
+    {
+        ApplicationContext context = ApplicationContext.getInstance();
+        dialogTool = context.getBean(Constants.DIALOG_TOOL_KEY);
+        toastTool = context.getBean(Constants.TOAST_TOOL_KEY);
+    }
 
     public GoToNextStepYesListener(Activity activityContext, Long roundId, List<SearchPacketsPacketDTO> packets) {
         this.activityContext = activityContext;
@@ -40,16 +55,12 @@ public class GoToNextStepYesListener implements DialogInterface.OnClickListener 
                 //Let the back end remove the packet
                 //from the round and mark it as lost
                 try {
-                    Boolean removed = new MarkAsLostTask().execute(roundId, packet).get();
-                    String message = String.format(
-                            "Result of backend trying to mark packet [%s] for round [%s] as lost: [%s]",
-                            packet.getPacketId(), roundId, removed);
-                    Log.d(getClass().getSimpleName(), message);
-                } catch (InterruptedException | ExecutionException e) {
-                    String message = String.format(
-                            "Could not mark packet [%s] for round [%s] as lost",
-                            packet.getPacketId(), roundId);
-                    Log.e(getClass().getSimpleName(), message, e);
+                    AsyncTaskResult<Boolean> removedResult = new MarkAsLostTask().execute(roundId, packet).get();
+                    if (removedResult.hasException()){
+                        throw removedResult.getException();
+                    }
+                } catch (Exception e) {
+                    dialogTool.fatalBackEndExceptionDialog(activityContext).show();
                 }
 
             } else {
@@ -61,27 +72,33 @@ public class GoToNextStepYesListener implements DialogInterface.OnClickListener 
             //If no packets left -> the round ends
             try {
                 //Let backend mark the round as ended
-                Boolean roundEnded = new EndRoundTask().execute(roundId).get();
-                String message = String.format(
-                        "Result of backend trying to end round [%s]",
-                        roundId);
-                Log.d(getClass().getSimpleName(), message);
-            } catch (InterruptedException | ExecutionException e) {
-                String message = String.format(
-                        "Could not end round [%s]",
-                        roundId);
-                Log.e(getClass().getSimpleName(), message, e);
+                AsyncTaskResult<Boolean> roundEndedResult = new EndRoundTask().execute(roundId).get();
+                if (roundEndedResult.hasException()){
+                    throw roundEndedResult.getException();
+                }
+            } catch (Exception e) {
+                dialogTool.fatalBackEndExceptionDialog(activityContext).show();
             }
 
             //Go back to the start screen
             Intent intent = new Intent(activityContext, HomeScreenActivity.class);
             activityContext.startActivity(intent);
+
+            //Show toast
+            toastTool.createToast(activityContext, activityContext.getString(R.string.all_packets_marked_as_lost)).show();
         } else { //The round can go on to the next screen
-            new UpdateStateLoadingInTask().execute(roundId);
+            try {
+                AsyncTaskResult<Boolean> updateStateLoadingInResult = new UpdateStateLoadingInTask().execute(roundId).get();
+                if (updateStateLoadingInResult.hasException()){
+                    throw updateStateLoadingInResult.getException();
+                }
+            } catch (Exception e){
+                dialogTool.fatalBackEndExceptionDialog(activityContext).show();
+            }
             //create intent with roundId and remaining packets
             Intent intent = new Intent(activityContext, LoadingInActivity.class);
-            intent.putExtra("roundId", roundId);
-            intent.putParcelableArrayListExtra("packets",
+            intent.putExtra(Constants.ROUND_ID_KEY, roundId);
+            intent.putParcelableArrayListExtra(Constants.PACKETS_LIST_KEY,
                     new ArrayList<>(
                             SearchPacketsPacketDTO.mapCollectionSearchPacketsToParcelableDTO(packetsThatAreLeft)));
             //show next activity

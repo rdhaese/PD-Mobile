@@ -15,6 +15,8 @@ import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
  */
 public class SearchPacketsAdapter extends BaseAdapter implements Serializable {
 
+    public static final int DEFAULT_ITEM_ID = -1;
+
     private List<SearchPacketsPacketDTO> packets;
     private List<SearchingPacketsFragment.SearchPacketListItemHolder> holders;
 
@@ -41,7 +43,7 @@ public class SearchPacketsAdapter extends BaseAdapter implements Serializable {
      */
     @Override
     public long getItemId(int position) {
-        return -1;
+        return DEFAULT_ITEM_ID;
     }
 
     @Override

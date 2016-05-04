@@ -1,11 +1,11 @@
 package be.rdhaese.project.mobile;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,25 +13,21 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.NumberPicker;
 
-import java.util.concurrent.ExecutionException;
-
 import be.rdhaese.project.mobile.activity.HomeScreenActivity;
 import be.rdhaese.project.mobile.activity.SearchingPacketsActivity;
 import be.rdhaese.project.mobile.app_id.AppIdTool;
+import be.rdhaese.project.mobile.constants.Constants;
 import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.dialog.DialogTool;
 import be.rdhaese.project.mobile.dialog.listener.DoNothingListener;
 import be.rdhaese.project.mobile.task.GetNewRoundTask;
 import be.rdhaese.project.mobile.task.UpdateStateRoundStartedTask;
-import be.rdhaese.project.mobile.toast.ToastTool;
+import be.rdhaese.project.mobile.task.result.AsyncTaskResult;
 import roboguice.fragment.RoboFragment;
 import roboguice.inject.InjectView;
 
 
 public class NumberOfPacketsFragment extends RoboFragment {
-
-    private static final int MY_PERMISSIONS_REQUEST = 1;
-    private static final Long INVALID_ROUND = -1L;
 
     @InjectView(R.id.npNumberOfPackets)
     private NumberPicker npNumberOfPackets;
@@ -39,30 +35,25 @@ public class NumberOfPacketsFragment extends RoboFragment {
     private Button btnStartRound;
 
     private DialogTool dialogTool;
-    private ToastTool toastTool;
     private AppIdTool appIdTool;
 
     {
         ApplicationContext context = ApplicationContext.getInstance();
-        dialogTool = context.getBean("dialogTool");
-        toastTool = context.getBean("toastTool");
-        appIdTool = context.getBean("appIdTool");
+        dialogTool = context.getBean(Constants.DIALOG_TOOL_KEY);
+        appIdTool = context.getBean(Constants.APP_ID_TOOL_KEY);
     }
 
     private void init() {
-        npNumberOfPackets.setMinValue(1);
-        npNumberOfPackets.setMaxValue(10);
+        npNumberOfPackets.setMinValue(Constants.ROUND_MIN_AMOUNT_PACKETS);
+        npNumberOfPackets.setMaxValue(Constants.ROUND_MAX_AMOUNT_PACKETS);
 
         btnStartRound.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
                     startRound(v);
-                    //TODO handle exceptions
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
                 }
             }
         });
@@ -84,68 +75,62 @@ public class NumberOfPacketsFragment extends RoboFragment {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST: {
-                // If request is cancelled, the result arrays are empty.
+            case Constants.PERMISSIONS_REQUEST_CODE: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //TODO ask if sure
-                    startRound();
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-
-                } else {
-                    //TODO WHat here
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
+                    try {
+                        startRound();
+                    } catch (Exception e) {
+                        dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
+                    }
                 }
                 return;
             }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
     }
 
-    private void startRound() {
-        System.setProperty("http.keepAlive", "false");
-        try {
+    private void startRound() throws Exception {
             Integer amountOfPackets = npNumberOfPackets.getValue();
-            Long roundId = new GetNewRoundTask().execute(amountOfPackets
+            AsyncTaskResult<Long> roundIdResult = new GetNewRoundTask().execute(amountOfPackets
             ).get();
+            if (roundIdResult.hasException()){
+                throw roundIdResult.getException();
+            }
 
-            if (INVALID_ROUND.equals(roundId)) {
+            Long roundId = roundIdResult.getResult();
+            if (Constants.INVALID_ROUND_ID.equals(roundId)) {
                 //If returned roundId equals -1, it means there where no packets to start a round.
 
                 //Show HomeScreenActiviy again with a message
                 Intent intent = new Intent(getActivity(), HomeScreenActivity.class);
-                String message = "No packets found to start a round. Please contact management.";
-                intent.putExtra("message",message);
+                String message = getString(R.string.no_packets_found);
+                intent.putExtra(Constants.MESSAGE_KEY,message);
                 startActivity(intent);
             } else {
                 //A valid roundId is returned, we can go on to the next activity
-                new UpdateStateRoundStartedTask().execute(appIdTool.getAppId(this.getContext()), roundId);
+                AsyncTaskResult<Boolean> updateStateRoundStartedResult = new UpdateStateRoundStartedTask().execute(appIdTool.getAppId(this.getContext()), roundId).get();
+                if (updateStateRoundStartedResult.hasException()){
+                    throw updateStateRoundStartedResult.getException();
+                }
                 Intent intent = new Intent(this.getActivity(), SearchingPacketsActivity.class);
-                intent.putExtra("roundId", roundId);
+                intent.putExtra(Constants.ROUND_ID_KEY, roundId);
                 startActivity(intent);
             }
-        } catch (InterruptedException e) {
-            //TODO handle this
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            //TODO handle this
-            e.printStackTrace();
-        }
     }
 
-    public void startRound(final View view) throws ExecutionException, InterruptedException {
+    public void startRound(final View view) throws Exception {
         //Ask if the courier is sure, no turning back afterwards
         //Prepare the dialog
-        String title = "No Turning Back";
-        String message = "Are you sure you want to start the round? There is no turning back after! You'll have to finish the round.";
+        String title = getString(R.string.no_turning_back);
+        String message = getString(R.string.no_turning_back_are_you_sure);
         DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                askPermissionIfNecessaryAndStartRound(view);
+                try {
+                    askPermissionIfNecessaryAndStartRound(view);
+                } catch (Exception e) {
+                    dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
+                }
             }
         };
         DialogInterface.OnClickListener noListener = new DoNothingListener();
@@ -159,17 +144,29 @@ public class NumberOfPacketsFragment extends RoboFragment {
                 .show();
     }
 
-    private void askPermissionIfNecessaryAndStartRound(View view) {
+
+
+    private void askPermissionIfNecessaryAndStartRound(View view) throws Exception {
         if (ContextCompat.checkSelfPermission(view.getContext(),
                 Manifest.permission.INTERNET)
                 != PackageManager.PERMISSION_GRANTED) {
-            //TODO
-            //SDK23 related check
+            //TODO SDK23 related check
             //Figure out a way to force the user to pick yes
             //Will probably give troubles
             //If no, the application should maybe suspend and the round terminated...
         } else {
-            startRound();
+            new Thread(new Runnable() {
+                final ProgressDialog pd = ProgressDialog.show(getActivity(), getString(R.string.creating_delivery_round), getString(R.string.can_take_a_few_seconds), true, false);
+                @Override
+                public void run() {
+                    try {
+                        startRound();
+                        pd.dismiss();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }).start();
         }
     }
 }

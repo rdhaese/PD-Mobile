@@ -5,35 +5,37 @@ import android.util.Log;
 
 import be.rdhaese.packetdelivery.back_end.web_service.interfaces.DeliveryRoundWebService;
 import be.rdhaese.packetdelivery.dto.PacketDTO;
+import be.rdhaese.project.mobile.constants.Constants;
 import be.rdhaese.project.mobile.context.ApplicationContext;
+import be.rdhaese.project.mobile.task.result.AsyncTaskResult;
 
 /**
  * Created by RDEAX37 on 6/04/2016.
  */
-public class MarkAsLostTask extends AsyncTask<Object, Void, Boolean> {
+public class MarkAsLostTask extends AbstractAsyncTask<Object, Void, Boolean> {
 
-    DeliveryRoundWebService roundService;
+    public static final Integer CORRECT_AMOUNT_OF_PARAMS = 2;
+
+    private DeliveryRoundWebService roundService;
 
     {
         ApplicationContext context = ApplicationContext.getInstance();
-        roundService = context.getBean("roundService");
+        roundService = context.getBean(Constants.ROUND_SERVICE_KEY);
     }
 
     @Override
-    protected Boolean doInBackground(Object... params) {
-        if (params.length == 0) {
-            return false;
+    protected AsyncTaskResult<Boolean> doInBackground(Object... params) {
+        if (isAmountOfParamsIncorrect(CORRECT_AMOUNT_OF_PARAMS, params)){
+            return createResult(false);
         }
+
         Long roundId = (Long) params[0];
         PacketDTO packetDTO = (PacketDTO) params[1];
 
-        String message = String.format(
-                "Marking packet [%s] for round [%s] as lost",
-                packetDTO.getPacketId(),
-                roundId
-        );
-        Log.d(getClass().getSimpleName(), message);
-
-        return roundService.markAsLost(roundId, packetDTO);
+        try {
+            return createResult(roundService.markAsLost(roundId, packetDTO));
+        } catch (Exception e){
+            return createResult(e);
+        }
     }
 }

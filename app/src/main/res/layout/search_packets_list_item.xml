@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="10dp"
-        android:text="Packet ID:" />
+        android:text="@string/packet_id_text" />
 
     <TextView
         android:id="@+id/txtPacketIdText"
@@ -33,7 +33,7 @@
         <Switch
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Confirm Visually"
+            android:text="@string/confirm_visually"
             android:id="@+id/switchConfirmVisually"
             android:layout_gravity="right"
             android:textSize="10dp"
@@ -43,7 +43,7 @@
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Scan"
+            android:text="@string/scan"
             android:layout_gravity="right"
             android:id="@+id/btnScan"
             android:background="@drawable/rounded_button"

@@ -13,7 +13,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Select Number Of Packets"
+            android:text="@string/select_number_of_packets"
             android:id="@+id/textView2"
             android:layout_above="@+id/npNumberOfPackets"
             android:layout_alignParentLeft="true"
@@ -33,7 +33,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Request Packets"
+            android:text="@string/request_packets"
             android:id="@+id/btnStartRound"
             android:background="@drawable/rounded_button"
             android:padding="5dp"

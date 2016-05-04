@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.util.Log;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -20,6 +22,7 @@ import be.rdhaese.project.mobile.dialog.DialogTool;
 import be.rdhaese.project.mobile.dialog.listener.DoNothingListener;
 import be.rdhaese.project.mobile.task.GetAppStateTask;
 import be.rdhaese.project.mobile.task.GetNewAppIdTask;
+import be.rdhaese.project.mobile.task.result.AsyncTaskResult;
 import roboguice.activity.RoboFragmentActivity;
 import roboguice.inject.ContentView;
 
@@ -37,7 +40,11 @@ public class HomeScreenActivity extends AbstractActivity {
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         checkIfNecessaryAppsAreInstalled();
-        checkIfAlreadyHasARound(); //TODO maybe in onCreate or similar
+        try {
+            checkIfAlreadyHasARound();
+        } catch (Exception e) {
+            dialogTool.fatalBackEndExceptionDialog(this).show();
+        }
     }
 
     private void checkIfNecessaryAppsAreInstalled() {
@@ -69,41 +76,31 @@ public class HomeScreenActivity extends AbstractActivity {
         return installed;
     }
 
-    private void checkIfAlreadyHasARound() {
+    private void checkIfAlreadyHasARound() throws Exception {
         String appId = appIdTool.getAppId(this);
 
-        AppStateDTO appState = null;
-        try {
-            appState = new GetAppStateTask().execute(appId).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();//TODO handle this
-        } catch (ExecutionException e) {
-            e.printStackTrace();//TODO handle this
-        }
+        AsyncTaskResult<AppStateDTO> appStateResult = new GetAppStateTask().execute(appId).get();
 
-        if (appState == null){
+        if (appStateResult.hasNullResult()) {
             //Means the id that the app holds, is not known to the back end for some reason
             //Request new app id
-            try {
-                appId = new GetNewAppIdTask().execute().get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();//TODO handle this
-            } catch (ExecutionException e) {
-                e.printStackTrace(); //TODO handle this
+            AsyncTaskResult<String> appIdResult = new GetNewAppIdTask().execute().get();
+            if (appIdResult.hasException()) {
+                throw appIdResult.getException();
             }
+
             //Save the new appId
-            appIdTool.saveAppId(this,appId);
+            appIdTool.saveAppId(this, appIdResult.getResult());
 
             //Get appstate again
-            try {
-                appState = new GetAppStateTask().execute(appId).get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();//TODO handle this
-            } catch (ExecutionException e) {
-                e.printStackTrace();//TODO handle this
-            }
+            appStateResult = new GetAppStateTask().execute(appId).get();
         }
 
+        if (appStateResult.hasException()) {
+            throw appStateResult.getException();
+        }
+
+        AppStateDTO appState = appStateResult.getResult();
         if (appState.getRoundId() != null) {
             Intent intent = null;
             switch (appState.getActivity()) {
@@ -122,7 +119,8 @@ public class HomeScreenActivity extends AbstractActivity {
             startActivity(intent);
 
             String toastText = "Delivery round state loaded.";
-            toastTool.createToast(this,toastText).show();
+            toastTool.createToast(this, toastText).show();
         }
     }
+
 }

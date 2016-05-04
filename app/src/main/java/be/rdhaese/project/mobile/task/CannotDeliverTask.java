@@ -4,33 +4,41 @@ import android.os.AsyncTask;
 
 import be.rdhaese.packetdelivery.back_end.web_service.interfaces.DeliveryRoundWebService;
 import be.rdhaese.packetdelivery.dto.PacketDTO;
+import be.rdhaese.project.mobile.constants.Constants;
 import be.rdhaese.project.mobile.context.ApplicationContext;
+import be.rdhaese.project.mobile.task.result.AsyncTaskResult;
 
 /**
  * Created by RDEAX37 on 9/04/2016.
  */
-public class CannotDeliverTask extends AsyncTask<Object, Void, Boolean> {
+public class CannotDeliverTask extends AbstractAsyncTask<Object, Void, Boolean> {
+
+    public static final Integer CORRECT_AMOUNT_OF_PARAMS = 3;
 
     private DeliveryRoundWebService roundService;
 
     {
         ApplicationContext context = ApplicationContext.getInstance();
-        roundService = context.getBean("roundService");
+        roundService = context.getBean(Constants.ROUND_SERVICE_KEY);
     }
 
     @Override
-    protected Boolean doInBackground(Object... params) {
-        if (params.length != 3){
-            return false;
+    protected AsyncTaskResult<Boolean> doInBackground(Object... params) {
+        if (isAmountOfParamsIncorrect(CORRECT_AMOUNT_OF_PARAMS, params)){
+            return createResult(false);
         }
+
         Long roundId = (Long) params[0];
         PacketDTO currentPacket = (PacketDTO) params[1];
         String reason = params[2].toString();
 
-        if ((reason == null) || ((reason = reason.trim()).isEmpty())){
-            return false;
+        if ((reason == null) || ((reason = reason.trim()).isEmpty())) {
+            return createResult(false);
         }
-
-        return roundService.cannotDeliver(roundId, currentPacket, reason);
+        try {
+            return createResult(roundService.cannotDeliver(roundId, currentPacket, reason));
+        } catch (Exception e) {
+            return createResult(e);
+        }
     }
 }

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,23 +11,25 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
+import java.util.List;
 
 import be.rdhaese.packetdelivery.dto.PacketDTO;
+import be.rdhaese.project.mobile.activity.HomeScreenActivity;
 import be.rdhaese.project.mobile.activity.LoadingInActivity;
 import be.rdhaese.project.mobile.activity.OngoingDeliveryActivity;
 import be.rdhaese.project.mobile.constants.Constants;
 import be.rdhaese.project.mobile.context.ApplicationContext;
 import be.rdhaese.project.mobile.decorator.ParcelablePacketDTODecorator;
-import be.rdhaese.project.mobile.decorator.SearchPacketsPacketDTO;
 import be.rdhaese.project.mobile.dialog.DialogTool;
 import be.rdhaese.project.mobile.dialog.listener.DoNothingListener;
 import be.rdhaese.project.mobile.location.LocationUpdateService;
+import be.rdhaese.project.mobile.task.EndRoundTask;
 import be.rdhaese.project.mobile.task.GetRoundPacketsTask;
 import be.rdhaese.project.mobile.task.MarkAsLostTask;
 import be.rdhaese.project.mobile.task.StartRoundTask;
 import be.rdhaese.project.mobile.task.UpdateStateNextPacketTask;
 import be.rdhaese.project.mobile.task.UpdateStateOngoingDeliveryTask;
+import be.rdhaese.project.mobile.task.result.AsyncTaskResult;
 import be.rdhaese.project.mobile.toast.ToastTool;
 import roboguice.fragment.RoboFragment;
 import roboguice.inject.InjectExtra;
@@ -49,13 +50,12 @@ public class LoadingInFragment extends RoboFragment {
     @InjectView(R.id.txtAmountOfPacketsLeft)
     private TextView txtAmountOfPacketsLeft;
 
-    @InjectExtra("roundId")
+    @InjectExtra(Constants.ROUND_ID_KEY)
     private Long roundId;
-    @InjectExtra(value = "packets", optional = true)
+    @InjectExtra(value = Constants.PACKETS_KEY, optional = true)
     private ArrayList<ParcelablePacketDTODecorator> packets;
-    @InjectExtra(value = "currentPacketIndex", optional = true)
+    @InjectExtra(value = Constants.CURRENT_PACKET_INDEX_KEY, optional = true)
     private Integer currentPacketIndex;
-
 
     private PacketDTO currentPacket;
 
@@ -64,8 +64,8 @@ public class LoadingInFragment extends RoboFragment {
 
     {
         ApplicationContext context = ApplicationContext.getInstance();
-        dialogTool = context.getBean("dialogTool");
-        toastTool = context.getBean("toastTool");
+        dialogTool = context.getBean(Constants.DIALOG_TOOL_KEY);
+        toastTool = context.getBean(Constants.TOAST_TOOL_KEY);
     }
 
     @Override
@@ -78,45 +78,51 @@ public class LoadingInFragment extends RoboFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        init();
+        try {
+            init();
+        } catch (Exception e) {
+            dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
+        }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 0){
-            if (resultCode == Activity.RESULT_OK){
+        if (requestCode == 0) {
+            if (resultCode == Activity.RESULT_OK) {
                 //This runs after scanning for an id
                 //Getting scannedId from result
-                String scannedId = data.getStringExtra("SCAN_RESULT");
+                String scannedId = data.getStringExtra(Constants.SCAN_RESULT_KEY);
 
                 if (scannedId.equals(currentPacket.getPacketId())) {
                     //Success:
-                    String toastText = "Scan successful!";
+                    String toastText = getString(R.string.scan_successful);
                     toastTool.createToast(getActivity(), toastText).show();
                     //Do nextPacket logic
-                    nextPacket();
+                    try {
+                        nextPacket();
+                    } catch (Exception e) {
+                        dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
+                    }
                 } else {
                     //No success:
                     //Show toast:
-                    String toastText = String.format("Scanned code did not match packet id %s", currentPacket.getPacketId());
+                    String toastText = String.format("%s %s", getString(R.string.scanned_code_did_not_match), currentPacket.getPacketId());
                     toastTool.createToast(getActivity(), toastText).show();
                 }
             }
         }
     }
 
-    private void init() {
+    private void init() throws Exception {
         //No packets injected, means the app got shutdown and started during an ongoing round
-        if (packets == null){
+        if (packets == null) {
             //Get the packets from the back end
-            try {
-                packets = new ArrayList<>(ParcelablePacketDTODecorator.mapCollectionToDecorator(new GetRoundPacketsTask().execute(roundId).get()));
-            } catch (InterruptedException e) {
-                e.printStackTrace(); //TODO handle this
-            } catch (ExecutionException e) {
-                e.printStackTrace(); //TODO handle this
+            AsyncTaskResult<List<PacketDTO>> roundPacketResult = new GetRoundPacketsTask().execute(roundId).get();
+            if (roundPacketResult.hasException()) {
+                throw roundPacketResult.getException();
             }
+            packets = new ArrayList<>(ParcelablePacketDTODecorator.mapCollectionToDecorator(roundPacketResult.getResult()));
         }
 
         //Nothing injected, means first packet -> index 0
@@ -131,8 +137,9 @@ public class LoadingInFragment extends RoboFragment {
         txtPacketId.setText(currentPacket.getPacketId());
         int packetsSize = packets.size();
         String amountOfPacketsLeftText = String.format(
-                "%s of %s",
+                "%s %s %s",
                 packetsSize - currentPacketIndex,
+                getString(R.string.of),
                 packetsSize
         );
         txtAmountOfPacketsLeft.setText(amountOfPacketsLeftText);
@@ -149,12 +156,16 @@ public class LoadingInFragment extends RoboFragment {
             @Override
             public void onClick(View v) {
                 //Prepare dialog
-                String title = "Confirm Visually";
-                String message = "Are you sure packet IDs match? This is your responsibility!";
+                String title = getString(R.string.confirm_visually);
+                String message = getString(R.string.sure_that_packet_ids_match);
                 DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        confirmVisually();
+                        try {
+                            confirmVisually();
+                        } catch (Exception e) {
+                            dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
+                        }
                     }
                 };
                 DialogInterface.OnClickListener noListener = new DoNothingListener();
@@ -174,12 +185,16 @@ public class LoadingInFragment extends RoboFragment {
             @Override
             public void onClick(View v) {
                 //Prepare dialog
-                String title = "Mark As Lost";
-                String message = "Are you sure you want the packet as lost? This is your responsibility!";
+                String title = getString(R.string.mark_as_lost);
+                String message = getString(R.string.sure_that_packet_is_lost);
                 DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        markAsLost();
+                        try {
+                            markAsLost();
+                        } catch (Exception e) {
+                            dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
+                        }
                     }
                 };
                 DialogInterface.OnClickListener noListener = new DoNothingListener();
@@ -206,93 +221,111 @@ public class LoadingInFragment extends RoboFragment {
         startActivityForResult(intent, 0);
     }
 
-    private void confirmVisually() {
+    private void confirmVisually() throws Exception {
         //Do nextPacket logic
         nextPacket();
     }
 
-    private void nextPacket() {
+    private void nextPacket() throws Exception {
         currentPacketIndex++;
         if (currentPacketIndex >= packets.size()) {
-            //The last packet was handled -> the round can start
-            String toastText = "All packets are loaded in.";
-            toastTool.createToast(getActivity(), toastText).show();
-
-            //Ask if the courier is ready to start
-            //Prepare dialog
-            String title = "Start Round";
-            String message = "Push 'Yes' to start the round.";
-            DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    startRound();
+            //The last packet was handled
+            if (packets.isEmpty()) {
+                //All packets are lost
+                try {
+                    //Let backend mark the round as ended
+                    AsyncTaskResult<Boolean> roundEndedResult = new EndRoundTask().execute(roundId).get();
+                    if (roundEndedResult.hasException()){
+                        throw roundEndedResult.getException();
+                    }
+                } catch (Exception e) {
+                    dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
                 }
-            };
 
-            //Show dialog
-            dialogTool.yesDialog(
-                    getActivity(),
-                    title,
-                    message,
-                    yesListener
-            ).show();
+                //Go back to the start screen
+                Intent intent = new Intent(getActivity(), HomeScreenActivity.class);
+                startActivity(intent);
+
+                //Show toast
+                toastTool.createToast(getActivity(), getString(R.string.all_packets_lost)).show();
+            } else {
+                //Still some packets left -> the round can start
+                String toastText = getString(R.string.all_packets_loaded_in);
+                toastTool.createToast(getActivity(), toastText).show();
+
+                //Ask if the courier is ready to start
+                //Prepare dialog
+                String title = getString(R.string.start_round);
+                String message = getString(R.string.push_yes_to_start);
+                DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        try {
+                            startRound();
+                        } catch (Exception e) {
+                            dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
+                        }
+                    }
+                };
+
+                //Show dialog
+                dialogTool.yesDialog(
+                        getActivity(),
+                        title,
+                        message,
+                        yesListener
+                ).show();
+            }
         } else {
-            new UpdateStateNextPacketTask().execute(roundId);
+            AsyncTaskResult<Boolean> updateStateNextPacketResult = new UpdateStateNextPacketTask().execute(roundId).get();
+            if (updateStateNextPacketResult.hasException()) {
+                throw updateStateNextPacketResult.getException();
+            }
             //Start this activity again, the currentPacketIndex was incremented,
             //so the next packet will be shown.
             Intent intent = new Intent(this.getActivity(), LoadingInActivity.class);
-            intent.putExtra("roundId", roundId);
-            intent.putExtra("currentPacketIndex", currentPacketIndex);
-            intent.putParcelableArrayListExtra("packets", packets);
+            intent.putExtra(Constants.ROUND_ID_KEY, roundId);
+            intent.putExtra(Constants.CURRENT_PACKET_INDEX_KEY, currentPacketIndex);
+            intent.putParcelableArrayListExtra(Constants.PACKETS_KEY, packets);
             startActivity(intent);
         }
+
     }
 
-    private void startRound() {
-        try {
-            Boolean roundStarted = new StartRoundTask().execute(roundId).get();
-            String message = String.format(
-                    "Result of backend starting round [%s]: [%s]",
-                    roundId, roundStarted);
-            Log.d(getClass().getSimpleName(), message);
-
-            if (roundStarted){
-                new UpdateStateOngoingDeliveryTask().execute(roundId);
-                Intent intent = new Intent(getActivity(), LocationUpdateService.class);
-                intent.putExtra("roundId", roundId);
-                getActivity().startService(intent);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            String message = String.format(
-                    "Could not start round [%s]",
-                    roundId);
-            Log.e(getClass().getSimpleName(), message, e);
+    private void startRound() throws Exception {
+        AsyncTaskResult<Boolean> roundStartedResult = new StartRoundTask().execute(roundId).get();
+        if (roundStartedResult.hasException()) {
+            throw roundStartedResult.getException();
         }
+        if (roundStartedResult.getResult()) {
+            AsyncTaskResult<Boolean> updateStateOngoingDeliveryResult = new UpdateStateOngoingDeliveryTask().execute(roundId).get();
+            if (updateStateOngoingDeliveryResult.hasException()) {
+                throw updateStateOngoingDeliveryResult.getException();
+            }
+            Intent intent = new Intent(getActivity(), LocationUpdateService.class);
+            intent.putExtra(Constants.ROUND_ID_KEY, roundId);
+            getActivity().startService(intent);
+        }
+
         //Go to ongoing round activity (which will also start the GPS navigation)
         Intent intent = new Intent(this.getActivity(), OngoingDeliveryActivity.class);
-        intent.putExtra("roundId", roundId);
-        intent.putParcelableArrayListExtra("packets", packets);
+        intent.putExtra(Constants.ROUND_ID_KEY, roundId);
+        intent.putParcelableArrayListExtra(Constants.PACKETS_KEY, packets);
         startActivity(intent);
     }
 
-    private void markAsLost() {
+    private void markAsLost() throws Exception {
         //Let the back end remove the packet
         //from the round and mark it as lost
-        try {
-            Boolean removed = new MarkAsLostTask().execute(roundId, currentPacket).get();
-            if (removed) {
-                packets.remove(currentPacketIndex);
-                new UpdateStateNextPacketTask().execute(roundId);
-            }
-            String message = String.format(
-                    "Result of backend trying to mark packet [%s] for round [%s] as lost: [%s]",
-                    currentPacket.getPacketId(), roundId, removed);
-            Log.d(getClass().getSimpleName(), message);
-        } catch (InterruptedException | ExecutionException e) {
-            String message = String.format(
-                    "Could not mark packet [%s] for round [%s] as lost",
-                    currentPacket.getPacketId(), roundId);
-            Log.e(getClass().getSimpleName(), message, e);
+        AsyncTaskResult<Boolean> removedResult = new MarkAsLostTask().execute(roundId, currentPacket).get();
+        if (removedResult.hasException()) {
+            throw removedResult.getException();
+        }
+
+        packets.remove(currentPacketIndex.intValue());
+        AsyncTaskResult<Boolean> updateStateNextPacketResult = new UpdateStateNextPacketTask().execute(roundId).get();
+        if (updateStateNextPacketResult.hasException()) {
+            throw updateStateNextPacketResult.getException();
         }
 
         //Do nextPacket logic

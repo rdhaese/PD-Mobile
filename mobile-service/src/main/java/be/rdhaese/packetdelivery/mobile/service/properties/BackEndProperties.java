@@ -2,6 +2,7 @@ package be.rdhaese.packetdelivery.mobile.service.properties;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Properties;
 
 /**
@@ -83,6 +84,10 @@ public class BackEndProperties {
 
     public String getAddLocationUpdateUrl() {
         return getWithServerPath("addLocationUpdate");
+    }
+
+    public String getCompanyAddressUrl() {
+        return getWithServerPath("companyAddress");
     }
 
     public String getStateNewIdUrl() { return getWithServerPath("state.new"); }

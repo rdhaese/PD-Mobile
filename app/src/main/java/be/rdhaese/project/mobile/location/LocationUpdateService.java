@@ -18,15 +18,18 @@ import android.widget.Toast;
 import java.util.concurrent.ExecutionException;
 
 import be.rdhaese.packetdelivery.dto.LongLatDTO;
+import be.rdhaese.project.mobile.R;
+import be.rdhaese.project.mobile.constants.Constants;
 import be.rdhaese.project.mobile.task.AddLocationUpdateTask;
+import be.rdhaese.project.mobile.task.result.AsyncTaskResult;
 
 /**
  * Created by RDEAX37 on 10/04/2016.
  */
 public class LocationUpdateService extends Service {
 
-   // private static final Long INTERVAL = new Long(5 * 60 * 1000); //5 minutes in milliseconds
-    private static final Long INTERVAL = 5000L; //Update every 5 seconds, for test purposes
+    private static final Long INTERVAL = new Long(5 * 60 * 1000); //5 minutes in milliseconds
+    //private static final Long INTERVAL = 5000L; //Update every 5 seconds, for test purposes
     private Long roundId;
 
     private LocationManager locMan;
@@ -51,8 +54,7 @@ public class LocationUpdateService extends Service {
 
             if (locationChanged)
                 if (ActivityCompat.checkSelfPermission(LocationUpdateService.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(LocationUpdateService.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    //TODO
-                    //SDK23 related check
+                    //TODO SDK23 related check
                     //Figure out a way to force the user to pick yes
                     //Will probably give troubles
                     //If no, the application should maybe suspend and the round terminated...
@@ -85,7 +87,7 @@ public class LocationUpdateService extends Service {
         curLocation = getBestLocation();
 
         if (curLocation == null) {
-            Toast.makeText(getBaseContext(), "Unable to get your location", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), R.string.unable_to_get_location, Toast.LENGTH_SHORT).show();
         }
 
         isService = true;
@@ -96,7 +98,7 @@ public class LocationUpdateService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-        roundId = intent.getLongExtra("roundId", -1L);
+        roundId = intent.getLongExtra(Constants.ROUND_ID_KEY, Constants.INVALID_ROUND_ID);
         return START_REDELIVER_INTENT;
     }
 
@@ -132,13 +134,13 @@ public class LocationUpdateService extends Service {
                 longLatDTO.setLatitude(curLocation.getLatitude());
 
                 try {
-                    new AddLocationUpdateTask().execute(roundId, longLatDTO).get();
-                } catch (InterruptedException e) {
-                    //TODO handle exception
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    //TODO handle exception
-                    e.printStackTrace();
+                    AsyncTaskResult<Boolean> addLocationUpdateResult = new AddLocationUpdateTask().execute(roundId, longLatDTO).get();
+                    if (addLocationUpdateResult.hasException()){
+                        throw addLocationUpdateResult.getException();
+                    }
+                } catch (Exception e){
+                    //Stop the service... exception is logged in task
+                    stopSelf();
                 }
             }
             tempLoc = null;
@@ -156,8 +158,7 @@ public class LocationUpdateService extends Service {
         try {
             if (locMan.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    //TODO
-                    //SDK23 related check
+                    //TODO SDK23 related check
                     //Figure out a way to force the user to pick yes
                     //Will probably give troubles
                     //If no, the application should maybe suspend and the round terminated...
