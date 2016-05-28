@@ -113,7 +113,7 @@ public class SearchingPacketsFragment extends RoboFragment {
 
     private void init(Bundle savedInstance) throws Exception {
         if (searchPacketsPacketDTOs == null) {
-            AsyncTaskResult<List<PacketDTO>> roundPacketResult = new GetRoundPacketsTask().execute(getActivity(), roundId).get();
+            AsyncTaskResult<List<PacketDTO>> roundPacketResult = new GetRoundPacketsTask().execute(roundId).get();
             if (roundPacketResult.hasException()){
                 throw roundPacketResult.getException();
             }

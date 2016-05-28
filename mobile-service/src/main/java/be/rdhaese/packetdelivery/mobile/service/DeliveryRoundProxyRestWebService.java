@@ -22,14 +22,14 @@ public class DeliveryRoundProxyRestWebService extends AbstractService implements
      * @param amountOfPackets for the new round
      * @return the id of the new round
      */
-    //@Override
+    @Override
     public Long newRound(int amountOfPackets) {
         return getRestTemplate().getForObject(
                 getBackEndProperties().getNewRoundUrl(),
                 Long.class, amountOfPackets);
     }
 
-    //@Override
+    @Override
     public List<PacketDTO> getPackets(Long roundId) throws Exception {
         return Arrays.asList(
                 getRestTemplate().getForEntity(
@@ -38,31 +38,32 @@ public class DeliveryRoundProxyRestWebService extends AbstractService implements
                         .getBody());
     }
 
+    @Override
     public Boolean markAsLost(Long roundId, PacketDTO packetDTO) throws Exception {
         return getRestTemplate().postForObject(getBackEndProperties().getMarkAsLostUrl(), packetDTO, Boolean.class, roundId);
     }
 
-    // @Override
+     @Override
     public Boolean deliver(Long roundId, PacketDTO packetDTO) throws Exception {
         return getRestTemplate().postForObject(getBackEndProperties().getDeliverUrl(), packetDTO, Boolean.class, roundId);
     }
 
-    // @Override
-    public Boolean cannotDeliver(Long roundId, PacketDTO packetDTO, String reason) throws Exception {
+     @Override
+    public Boolean cannotDeliver(Long roundId, String reason, PacketDTO packetDTO) throws Exception {
         return getRestTemplate().postForObject(getBackEndProperties().getCannotDeliverUrl(), packetDTO, Boolean.class, roundId, reason);
     }
 
-    // @Override
+     @Override
     public Boolean addRemark(Long roundId, String remark) {
         return getRestTemplate().getForObject(getBackEndProperties().getAddRemarkUrl(), Boolean.class, roundId, remark);
     }
 
-    // @Override
+     @Override
     public Boolean addLocationUpdate(Long roundId, LongLatDTO longLatDTO) {
         return getRestTemplate().postForObject(getBackEndProperties().getAddLocationUpdateUrl(), longLatDTO, Boolean.class, roundId);
     }
 
-    //@Override
+    @Override
     public Boolean endRound(Long roundId) {
         return getRestTemplate().getForObject(
                 getBackEndProperties().getEndRoundUrl(),

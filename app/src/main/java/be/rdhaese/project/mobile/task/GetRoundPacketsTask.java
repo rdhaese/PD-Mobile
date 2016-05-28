@@ -18,7 +18,7 @@ import be.rdhaese.project.mobile.task.result.AsyncTaskResult;
  */
 public class GetRoundPacketsTask extends AbstractAsyncTask<Object,Void,List<PacketDTO>> {
 
-    public static final Integer CORRECT_AMOUNT_OF_PARAMS = 2;
+    public static final Integer CORRECT_AMOUNT_OF_PARAMS = 1;
 
     private DeliveryRoundWebService roundService;
     private  ProgressDialog progressDialog;
@@ -40,7 +40,7 @@ public class GetRoundPacketsTask extends AbstractAsyncTask<Object,Void,List<Pack
         }
 
         try {
-            return createResult(roundService.getPackets((Long) params[1]));
+            return createResult(roundService.getPackets((Long) params[0]));
         } catch (Exception e){
             return createResult(e);
         }

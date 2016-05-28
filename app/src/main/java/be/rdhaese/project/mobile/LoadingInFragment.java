@@ -29,6 +29,7 @@ import be.rdhaese.project.mobile.task.MarkAsLostTask;
 import be.rdhaese.project.mobile.task.StartRoundTask;
 import be.rdhaese.project.mobile.task.UpdateStateNextPacketTask;
 import be.rdhaese.project.mobile.task.UpdateStateOngoingDeliveryTask;
+import be.rdhaese.project.mobile.task.UpdateStateRoundEndedTask;
 import be.rdhaese.project.mobile.task.result.AsyncTaskResult;
 import be.rdhaese.project.mobile.toast.ToastTool;
 import roboguice.fragment.RoboFragment;
@@ -37,6 +38,7 @@ import roboguice.inject.InjectView;
 
 
 public class LoadingInFragment extends RoboFragment {
+
 
     @InjectView(R.id.btnScan)
     private Button btnScan;
@@ -81,6 +83,7 @@ public class LoadingInFragment extends RoboFragment {
         try {
             init();
         } catch (Exception e) {
+            e.printStackTrace();//TODO remove
             dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
         }
     }
@@ -100,7 +103,7 @@ public class LoadingInFragment extends RoboFragment {
                     toastTool.createToast(getActivity(), toastText).show();
                     //Do nextPacket logic
                     try {
-                        nextPacket();
+                        nextPacket(true);
                     } catch (Exception e) {
                         dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
                     }
@@ -223,11 +226,13 @@ public class LoadingInFragment extends RoboFragment {
 
     private void confirmVisually() throws Exception {
         //Do nextPacket logic
-        nextPacket();
+        nextPacket(true);
     }
 
-    private void nextPacket() throws Exception {
-        currentPacketIndex++;
+    private void nextPacket(boolean notLost) throws Exception {
+        if (notLost) {
+            currentPacketIndex++;
+        }
         if (currentPacketIndex >= packets.size()) {
             //The last packet was handled
             if (packets.isEmpty()) {
@@ -237,6 +242,10 @@ public class LoadingInFragment extends RoboFragment {
                     AsyncTaskResult<Boolean> roundEndedResult = new EndRoundTask().execute(roundId).get();
                     if (roundEndedResult.hasException()){
                         throw roundEndedResult.getException();
+                    }
+                    AsyncTaskResult<Boolean> updateStateRoundEndedResult = new UpdateStateRoundEndedTask().execute(roundId).get();
+                    if (updateStateRoundEndedResult.hasException()){
+                        throw updateStateRoundEndedResult.getException();
                     }
                 } catch (Exception e) {
                     dialogTool.fatalBackEndExceptionDialog(getActivity()).show();
@@ -277,9 +286,11 @@ public class LoadingInFragment extends RoboFragment {
                 ).show();
             }
         } else {
-            AsyncTaskResult<Boolean> updateStateNextPacketResult = new UpdateStateNextPacketTask().execute(roundId).get();
-            if (updateStateNextPacketResult.hasException()) {
-                throw updateStateNextPacketResult.getException();
+            if(notLost) {
+                AsyncTaskResult<Boolean> updateStateNextPacketResult = new UpdateStateNextPacketTask().execute(roundId).get();
+                if (updateStateNextPacketResult.hasException()) {
+                    throw updateStateNextPacketResult.getException();
+                }
             }
             //Start this activity again, the currentPacketIndex was incremented,
             //so the next packet will be shown.
@@ -323,12 +334,8 @@ public class LoadingInFragment extends RoboFragment {
         }
 
         packets.remove(currentPacketIndex.intValue());
-        AsyncTaskResult<Boolean> updateStateNextPacketResult = new UpdateStateNextPacketTask().execute(roundId).get();
-        if (updateStateNextPacketResult.hasException()) {
-            throw updateStateNextPacketResult.getException();
-        }
 
         //Do nextPacket logic
-        nextPacket();
+        nextPacket(false);
     }
 }

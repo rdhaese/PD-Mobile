@@ -69,5 +69,8 @@
     <string name="remark_to_long">The remark you entered is to long</string>
     <string name="creating_delivery_round">Creating Delivery Round</string>
     <string name="can_take_a_few_seconds">This can take a few seconds...</string>
+    <string name="necessary_apps_not_installed">Necessary Apps Not Installed</string>
+    <string name="please_install_apps">Please install a scanner and navigation app before using the application. The app will terminate now.</string>
+    <string name="state_loaded">Delivery round state loaded.</string>
 
 </resources>

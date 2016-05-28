@@ -36,7 +36,7 @@ public class CannotDeliverTask extends AbstractAsyncTask<Object, Void, Boolean> 
             return createResult(false);
         }
         try {
-            return createResult(roundService.cannotDeliver(roundId, currentPacket, reason));
+           return createResult(roundService.cannotDeliver(roundId, reason, currentPacket));
         } catch (Exception e) {
             return createResult(e);
         }

@@ -29,11 +29,15 @@ import roboguice.inject.ContentView;
 @ContentView(R.layout.activity_home_screen)
 public class HomeScreenActivity extends AbstractActivity {
 
+    public static final String ACTIVITY_SEARCHING = "searching";
+    public static final String ACTIVITY_LOADING = "loading";
+    public static final String ACTIVITY_ONGOING = "ongoing";
+
     private AppIdTool appIdTool;
 
     {
         ApplicationContext context = ApplicationContext.getInstance();
-        appIdTool = context.getBean("appIdTool");
+        appIdTool = context.getBean(Constants.APP_ID_TOOL_KEY);
     }
 
     @Override
@@ -52,8 +56,8 @@ public class HomeScreenActivity extends AbstractActivity {
                 || (!isAppInstalled(Constants.PACKAGE_SCAN))) {
             dialogTool.yesDialog(
                     this,
-                    "Necessary Apps Not Installed",
-                    "Please install a scanner and navigation app before using the application. The app will terminate now.",
+                    getString(R.string.necessary_apps_not_installed),
+                    getString(R.string.please_install_apps),
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -104,21 +108,22 @@ public class HomeScreenActivity extends AbstractActivity {
         if (appState.getRoundId() != null) {
             Intent intent = null;
             switch (appState.getActivity()) {
-                case "searching":
+                case ACTIVITY_SEARCHING:
                     intent = new Intent(this, SearchingPacketsActivity.class);
                     break;
-                case "loading":
+                case ACTIVITY_LOADING:
                     intent = new Intent(this, LoadingInActivity.class);
+                    intent.putExtra(Constants.CURRENT_PACKET_INDEX_KEY, appState.getCurrentPacketIndex());
                     break;
-                case "ongoing":
-                    intent = new Intent(this, LoadingInActivity.class);
-                    intent.putExtra("currentPacketIndex", appState.getCurrentPacketIndex());
+                case ACTIVITY_ONGOING:
+                    intent = new Intent(this, OngoingDeliveryActivity.class);
+                    intent.putExtra(Constants.CURRENT_PACKET_INDEX_KEY, appState.getCurrentPacketIndex());
                     break;
             }
-            intent.putExtra("roundId", appState.getRoundId());
+            intent.putExtra(Constants.ROUND_ID_KEY, appState.getRoundId());
             startActivity(intent);
 
-            String toastText = "Delivery round state loaded.";
+            String toastText = getString(R.string.state_loaded);
             toastTool.createToast(this, toastText).show();
         }
     }
