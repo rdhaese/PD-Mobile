@@ -38,7 +38,7 @@ public class AppIdTool {
         } catch (FileNotFoundException fnfe) {
             return HAS_NO_ID_YET;
         } catch (Exception e) {
-            Log.w("MYTAG", e);
+            Log.w(getClass().getSimpleName(), e);
             throw e;
         } finally {
             if (is != null) {
@@ -79,7 +79,7 @@ public class AppIdTool {
             fos = context.openFileOutput(Constants.FILE_APP_ID, Context.MODE_PRIVATE);
             fos.write(appId.getBytes());
         } catch (IOException e) {
-            //TODO log
+            Log.w(getClass().getSimpleName(), e);
             throw e;
         } finally {
             if (fos != null) {

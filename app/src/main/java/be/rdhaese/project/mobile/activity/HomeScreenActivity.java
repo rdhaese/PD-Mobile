@@ -97,7 +97,7 @@ public class HomeScreenActivity extends AbstractActivity {
             appIdTool.saveAppId(this, appIdResult.getResult());
 
             //Get appstate again
-            appStateResult = new GetAppStateTask().execute(appId).get();
+            appStateResult = new GetAppStateTask().execute(appIdResult.getResult()).get();
         }
 
         if (appStateResult.hasException()) {
